@@ -30,6 +30,7 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+.swiftpm/*
 
 # CocoaPods
 #
@@ -63,3 +64,12 @@ fastlane/test_output
 
 .vscode/*
 .agent/*
+.claude/*
+
+# Build artifacts
+build/
+dist/*.pkg
+dist/*.dmg
+
+# Resources (battery CLI will be copied during build)
+resources/battery

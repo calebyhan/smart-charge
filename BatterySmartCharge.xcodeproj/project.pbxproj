@@ -1,0 +1,672 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5AB922172F207429005B277C /* com.smartcharge.powermetrics-helper.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5AB922162F207429005B277C /* com.smartcharge.powermetrics-helper.plist */; };
+		APP001 /* BatterySmartChargeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC001 /* BatterySmartChargeApp.swift */; };
+		APP002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC002 /* AppDelegate.swift */; };
+		APP003 /* BatteryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC003 /* BatteryState.swift */; };
+		APP004 /* ChargingAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC004 /* ChargingAction.swift */; };
+		APP005 /* TimeRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC005 /* TimeRule.swift */; };
+		APP006 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC006 /* UserSettings.swift */; };
+		APP007 /* BatteryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC007 /* BatteryMonitor.swift */; };
+		APP008 /* SmartChargeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC008 /* SmartChargeManager.swift */; };
+		APP009 /* SMCController.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC009 /* SMCController.swift */; };
+		APP009A /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC009A /* UpdateChecker.swift */; };
+		APP010 /* ChargingAlgorithm.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC010 /* ChargingAlgorithm.swift */; };
+		APP011 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC011 /* NotificationManager.swift */; };
+		APP012 /* SMCNative.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC012 /* SMCNative.swift */; };
+		APP013 /* LaunchHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC013 /* LaunchHelper.swift */; };
+		APP014 /* PowerMetricsReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC014 /* PowerMetricsReader.swift */; };
+		APP015 /* PowerMetricsXPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC015 /* PowerMetricsXPC.swift */; };
+		APP016 /* PrivilegedHelperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC016 /* PrivilegedHelperManager.swift */; };
+		APP017 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC017 /* DashboardView.swift */; };
+		APP018 /* SankeyEnergyFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC018 /* SankeyEnergyFlowView.swift */; };
+		APP019 /* BatteryRangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC019 /* BatteryRangeView.swift */; };
+		APP020 /* TimelineChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC020 /* TimelineChartView.swift */; };
+		APP021 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC021 /* SettingsView.swift */; };
+		APP022 /* TimeRulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC022 /* TimeRulesView.swift */; };
+		APP023 /* PowerDrawSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC023 /* PowerDrawSettingsView.swift */; };
+		APP024 /* BatteryIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC024 /* BatteryIconRenderer.swift */; };
+		APP030 /* SMCBridge.c in Sources */ = {isa = PBXBuildFile; fileRef = SRC030 /* SMCBridge.c */; };
+		CPY001 /* PowerMetricsHelper in CopyFiles */ = {isa = PBXBuildFile; fileRef = PROD002 /* PowerMetricsHelper */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FW001 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FWREF001 /* IOKit.framework */; };
+		FW002 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FWREF002 /* ServiceManagement.framework */; };
+		FW003 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FWREF003 /* Security.framework */; };
+		FW004 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FWREF001 /* IOKit.framework */; };
+		HLP001 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = HSRC001 /* main.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		PROXY001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PROJ001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = TGT002;
+			remoteInfo = PowerMetricsHelper;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		COPY001 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Library/LaunchServices";
+			dstSubfolderSpec = 7;
+			files = (
+				CPY001 /* PowerMetricsHelper in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		5AB922162F207429005B277C /* com.smartcharge.powermetrics-helper.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "com.smartcharge.powermetrics-helper.plist"; sourceTree = "<group>"; };
+		CFG001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CFG002 /* BatterySmartCharge.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BatterySmartCharge.entitlements; sourceTree = "<group>"; };
+		FWREF001 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		FWREF002 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
+		FWREF003 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		HSRC001 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		HSRC002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		HSRC003 /* com.smartcharge.powermetrics-helper.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "com.smartcharge.powermetrics-helper.plist"; sourceTree = "<group>"; };
+		PROD001 /* BatterySmartCharge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BatterySmartCharge.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		PROD002 /* PowerMetricsHelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PowerMetricsHelper; sourceTree = BUILT_PRODUCTS_DIR; };
+		SRC001 /* BatterySmartChargeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatterySmartChargeApp.swift; sourceTree = "<group>"; };
+		SRC002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		SRC003 /* BatteryState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryState.swift; sourceTree = "<group>"; };
+		SRC004 /* ChargingAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChargingAction.swift; sourceTree = "<group>"; };
+		SRC005 /* TimeRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeRule.swift; sourceTree = "<group>"; };
+		SRC006 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
+		SRC007 /* BatteryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryMonitor.swift; sourceTree = "<group>"; };
+		SRC008 /* SmartChargeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartChargeManager.swift; sourceTree = "<group>"; };
+		SRC009 /* SMCController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMCController.swift; sourceTree = "<group>"; };
+		SRC009A /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		SRC010 /* ChargingAlgorithm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChargingAlgorithm.swift; sourceTree = "<group>"; };
+		SRC011 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		SRC012 /* SMCNative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMCNative.swift; sourceTree = "<group>"; };
+		SRC013 /* LaunchHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchHelper.swift; sourceTree = "<group>"; };
+		SRC014 /* PowerMetricsReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsReader.swift; sourceTree = "<group>"; };
+		SRC015 /* PowerMetricsXPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsXPC.swift; sourceTree = "<group>"; };
+		SRC016 /* PrivilegedHelperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegedHelperManager.swift; sourceTree = "<group>"; };
+		SRC017 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		SRC018 /* SankeyEnergyFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SankeyEnergyFlowView.swift; sourceTree = "<group>"; };
+		SRC019 /* BatteryRangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryRangeView.swift; sourceTree = "<group>"; };
+		SRC020 /* TimelineChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineChartView.swift; sourceTree = "<group>"; };
+		SRC021 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		SRC022 /* TimeRulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeRulesView.swift; sourceTree = "<group>"; };
+		SRC023 /* PowerDrawSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerDrawSettingsView.swift; sourceTree = "<group>"; };
+		SRC024 /* BatteryIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryIconRenderer.swift; sourceTree = "<group>"; };
+		SRC030 /* SMCBridge.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMCBridge.c; sourceTree = "<group>"; };
+		SRC031 /* SMCBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMCBridge.h; sourceTree = "<group>"; };
+		SRC032 /* BatterySmartCharge-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BatterySmartCharge-Bridging-Header.h"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FWPHASE001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FW001 /* IOKit.framework in Frameworks */,
+				FW002 /* ServiceManagement.framework in Frameworks */,
+				FW003 /* Security.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FWPHASE002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FW004 /* IOKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		GRP001 /* BatterySmartCharge */ = {
+			isa = PBXGroup;
+			children = (
+				GRP002 /* App */,
+				GRP003 /* Models */,
+				GRP004 /* Services */,
+				GRP005 /* Utilities */,
+				GRP006 /* Views */,
+				CFG001 /* Info.plist */,
+				CFG002 /* BatterySmartCharge.entitlements */,
+				SRC032 /* BatterySmartCharge-Bridging-Header.h */,
+			);
+			path = BatterySmartCharge;
+			sourceTree = "<group>";
+		};
+		GRP002 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				SRC001 /* BatterySmartChargeApp.swift */,
+				SRC002 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		GRP003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				SRC003 /* BatteryState.swift */,
+				SRC004 /* ChargingAction.swift */,
+				SRC005 /* TimeRule.swift */,
+				SRC006 /* UserSettings.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		GRP004 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				SRC007 /* BatteryMonitor.swift */,
+				SRC008 /* SmartChargeManager.swift */,
+				SRC009 /* SMCController.swift */,
+				SRC009A /* UpdateChecker.swift */,
+				SRC010 /* ChargingAlgorithm.swift */,
+				SRC011 /* NotificationManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		GRP005 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				SRC012 /* SMCNative.swift */,
+				SRC013 /* LaunchHelper.swift */,
+				SRC014 /* PowerMetricsReader.swift */,
+				SRC015 /* PowerMetricsXPC.swift */,
+				SRC016 /* PrivilegedHelperManager.swift */,
+				SRC024 /* BatteryIconRenderer.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		GRP006 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				GRP007 /* Dashboard */,
+				GRP008 /* Settings */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		GRP007 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				SRC017 /* DashboardView.swift */,
+				SRC018 /* SankeyEnergyFlowView.swift */,
+				SRC019 /* BatteryRangeView.swift */,
+				SRC020 /* TimelineChartView.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		GRP008 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				SRC021 /* SettingsView.swift */,
+				SRC022 /* TimeRulesView.swift */,
+				SRC023 /* PowerDrawSettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		GRP010 /* PowerMetricsHelper */ = {
+			isa = PBXGroup;
+			children = (
+				HSRC001 /* main.swift */,
+				HSRC002 /* Info.plist */,
+				HSRC003 /* com.smartcharge.powermetrics-helper.plist */,
+			);
+			path = PowerMetricsHelper;
+			sourceTree = "<group>";
+		};
+		GRP020 /* SMCBridge */ = {
+			isa = PBXGroup;
+			children = (
+				GRP021 /* include */,
+				SRC030 /* SMCBridge.c */,
+			);
+			path = SMCBridge;
+			sourceTree = "<group>";
+		};
+		GRP021 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				SRC031 /* SMCBridge.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		GRP030 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FWREF001 /* IOKit.framework */,
+				FWREF002 /* ServiceManagement.framework */,
+				FWREF003 /* Security.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		GRP040 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				PROD001 /* BatterySmartCharge.app */,
+				PROD002 /* PowerMetricsHelper */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		ROOT001 = {
+			isa = PBXGroup;
+			children = (
+				5AB922162F207429005B277C /* com.smartcharge.powermetrics-helper.plist */,
+				GRP001 /* BatterySmartCharge */,
+				GRP010 /* PowerMetricsHelper */,
+				GRP020 /* SMCBridge */,
+				GRP030 /* Frameworks */,
+				GRP040 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		TGT001 /* BatterySmartCharge */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BLDCFGLST001 /* Build configuration list for PBXNativeTarget "BatterySmartCharge" */;
+			buildPhases = (
+				SRCPHASE001 /* Sources */,
+				FWPHASE001 /* Frameworks */,
+				RSRCPHASE001 /* Resources */,
+				COPY001 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DEP001 /* PBXTargetDependency */,
+			);
+			name = BatterySmartCharge;
+			productName = BatterySmartCharge;
+			productReference = PROD001 /* BatterySmartCharge.app */;
+			productType = "com.apple.product-type.application";
+		};
+		TGT002 /* PowerMetricsHelper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BLDCFGLST002 /* Build configuration list for PBXNativeTarget "PowerMetricsHelper" */;
+			buildPhases = (
+				SRCPHASE002 /* Sources */,
+				FWPHASE002 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PowerMetricsHelper;
+			productName = PowerMetricsHelper;
+			productReference = PROD002 /* PowerMetricsHelper */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PROJ001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					TGT001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					TGT002 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = BLDCFGLST000 /* Build configuration list for PBXProject "BatterySmartCharge" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = ROOT001;
+			productRefGroup = GRP040 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				TGT001 /* BatterySmartCharge */,
+				TGT002 /* PowerMetricsHelper */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		RSRCPHASE001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5AB922172F207429005B277C /* com.smartcharge.powermetrics-helper.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		SRCPHASE001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				APP001 /* BatterySmartChargeApp.swift in Sources */,
+				APP002 /* AppDelegate.swift in Sources */,
+				APP003 /* BatteryState.swift in Sources */,
+				APP004 /* ChargingAction.swift in Sources */,
+				APP005 /* TimeRule.swift in Sources */,
+				APP006 /* UserSettings.swift in Sources */,
+				APP007 /* BatteryMonitor.swift in Sources */,
+				APP008 /* SmartChargeManager.swift in Sources */,
+				APP009 /* SMCController.swift in Sources */,
+				APP009A /* UpdateChecker.swift in Sources */,
+				APP010 /* ChargingAlgorithm.swift in Sources */,
+				APP011 /* NotificationManager.swift in Sources */,
+				APP012 /* SMCNative.swift in Sources */,
+				APP013 /* LaunchHelper.swift in Sources */,
+				APP014 /* PowerMetricsReader.swift in Sources */,
+				APP015 /* PowerMetricsXPC.swift in Sources */,
+				APP016 /* PrivilegedHelperManager.swift in Sources */,
+				APP017 /* DashboardView.swift in Sources */,
+				APP018 /* SankeyEnergyFlowView.swift in Sources */,
+				APP019 /* BatteryRangeView.swift in Sources */,
+				APP020 /* TimelineChartView.swift in Sources */,
+				APP021 /* SettingsView.swift in Sources */,
+				APP022 /* TimeRulesView.swift in Sources */,
+				APP023 /* PowerDrawSettingsView.swift in Sources */,
+				APP024 /* BatteryIconRenderer.swift in Sources */,
+				APP030 /* SMCBridge.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		SRCPHASE002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				HLP001 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DEP001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = TGT002 /* PowerMetricsHelper */;
+			targetProxy = PROXY001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		BLDCFG000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BLDCFG000R /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		BLDCFG001D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = BatterySmartCharge/BatterySmartCharge.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MBD2T58JVW;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/SMCBridge/include";
+				INFOPLIST_FILE = BatterySmartCharge/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartcharge.BatterySmartCharge;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "BatterySmartCharge/BatterySmartCharge-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		BLDCFG001R /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = BatterySmartCharge/BatterySmartCharge.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MBD2T58JVW;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/SMCBridge/include";
+				INFOPLIST_FILE = BatterySmartCharge/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartcharge.BatterySmartCharge;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "BatterySmartCharge/BatterySmartCharge-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BLDCFG002D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MBD2T58JVW;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = PowerMetricsHelper/Info.plist;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-sectcreate",
+					__TEXT,
+					__launchd_plist,
+					"$(SRCROOT)/PowerMetricsHelper/com.smartcharge.powermetrics-helper.plist",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.smartcharge.powermetrics-helper";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		BLDCFG002R /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MBD2T58JVW;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = PowerMetricsHelper/Info.plist;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-sectcreate",
+					__TEXT,
+					__launchd_plist,
+					"$(SRCROOT)/PowerMetricsHelper/com.smartcharge.powermetrics-helper.plist",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.smartcharge.powermetrics-helper";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BLDCFGLST000 /* Build configuration list for PBXProject "BatterySmartCharge" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BLDCFG000D /* Debug */,
+				BLDCFG000R /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BLDCFGLST001 /* Build configuration list for PBXNativeTarget "BatterySmartCharge" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BLDCFG001D /* Debug */,
+				BLDCFG001R /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BLDCFGLST002 /* Build configuration list for PBXNativeTarget "PowerMetricsHelper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BLDCFG002D /* Debug */,
+				BLDCFG002R /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = PROJ001 /* Project object */;
+}

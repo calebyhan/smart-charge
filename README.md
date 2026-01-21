@@ -4,14 +4,45 @@
 
 ## Overview
 
-Smart Charge provides real-time power monitoring, customizable charging rules, and beautiful visualizations of your system's energy flow. It is designed with a philosophy of **Availability First**—ensuring you never have a dead battery when you need it—while intelligently managing charge cycles to prolong battery health.
+Smart Charge provides real-time power monitoring, customizable charging rules, and beautiful visualizations of your system's energy flow. It is designed with a philosophy of **Availability First**, ensuring you never have a dead battery when you need it, while intelligently managing charge cycles to prolong battery health.
 
 ## Quick Start
 
-1.  **Download**: Get the latest release from the [Releases](https://github.com/yourusername/smart-charge/releases) page.
-2.  **Install**: Drag `BatterySmartCharge.app` to your Applications folder.
-3.  **Run**: Open the app. It will appear in your menu bar.
-4.  **Helper Tool**: On first launch, the app will check for the `battery` CLI tool. If not found, it will guide you through installation.
+### For Users
+
+1.  **Download**: Get `BatterySmartCharge-1.0.0.pkg` from the [Releases](https://github.com/yourusername/smart-charge/releases) page.
+2.  **Install**: Double-click the `.pkg` file and follow the installer prompts.
+3.  **Authorize**: Enter your password when prompted (required for power monitoring helper).
+4.  **Run**: The app will be installed to `/Applications/`. Launch it from there.
+
+The installer automatically sets up the privileged helper needed for real-time power monitoring.
+
+### For Developers
+
+1.  **Clone**: `git clone https://github.com/calebyhan/smart-charge.git`
+2.  **Open**: Open `BatterySmartCharge.xcodeproj` in Xcode
+3.  **Build**: Press Cmd+R to build and run
+
+To create a distributable installer:
+```bash
+# Build Release version
+xcodebuild -project BatterySmartCharge.xcodeproj -scheme BatterySmartCharge -configuration Release clean build
+
+# Create installer
+./create_installer.sh
+```
+
+The installer will be created at `dist/BatterySmartCharge-1.0.0.pkg`
+
+**Note**: The installer automatically bundles the `battery` CLI tool. If building the installer yourself, ensure `battery` is installed on your system (`brew install battery`) so it can be bundled.
+
+## Dependencies
+
+The installer includes:
+- **PowerMetrics Helper**: Monitors CPU/GPU power consumption (bundled)
+- **battery CLI**: Controls charging behavior via SMC ([actuallymentor/battery](https://github.com/actuallymentor/battery)) (bundled)
+
+Both are automatically installed by the .pkg installer with proper permissions.
 
 ## Documentation
 
