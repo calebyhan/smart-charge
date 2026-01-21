@@ -4,7 +4,21 @@
 
 ## Overview
 
-Smart Charge provides real-time power monitoring, customizable charging rules, and beautiful visualizations of your system's energy flow. It is designed with a philosophy of **Availability First**, ensuring you never have a dead battery when you need it, while intelligently managing charge cycles to prolong battery health.
+<table>
+  <tr>
+    <td width="60%">
+      <p>
+        Smart Charge provides real-time power monitoring, customizable charging rules, and beautiful visualizations of your system's energy flow. 
+      </p>
+      <p>
+        It is designed with a philosophy of <strong>Availability First</strong>, ensuring you never have a dead battery when you need it, while intelligently managing charge cycles to prolong battery health.
+      </p>
+    </td>
+    <td width="40%">
+      <img src="imgs/thumb.png" alt="Smart Charge Preview" width="100%">
+    </td>
+  </tr>
+</table>
 
 ## Quick Start
 
