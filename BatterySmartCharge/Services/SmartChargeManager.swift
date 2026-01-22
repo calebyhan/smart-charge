@@ -19,6 +19,10 @@ class SmartChargeManager: ObservableObject {
 
     private var lastAction: ChargingAction?
     private var overrideAction: ChargingAction?
+    private var lastActionChangeTime: Date = .distantPast
+    private var retryCount: Int = 0
+    private let maxRetries: Int = 3
+    private let retryTimeout: TimeInterval = 30 // seconds before retry
 
     // History tracking with timestamps
     private struct HistoryEntry {
@@ -80,7 +84,19 @@ class SmartChargeManager: ObservableObject {
         ) { [weak self] _ in
             // Immediately record battery level when system wakes up
             self?.recordBatteryOnWake()
+            // Re-apply charging state - SMC state may have been reset during sleep
+            self?.reapplyChargingState()
         }
+    }
+
+    private func reapplyChargingState() {
+        // Clear lastAction to force re-execution of SMC command
+        // This ensures we re-apply the charging state after wake from sleep
+        // or any other event that might have reset SMC state
+        lastAction = nil
+        retryCount = 0
+        lastActionChangeTime = Date()
+        evaluateState(battery: monitor.state)
     }
 
     private func recordBatteryOnWake() {
@@ -229,14 +245,29 @@ class SmartChargeManager: ObservableObject {
             NotificationCenter.default.post(name: NSNotification.Name("BatteryStateDidChange"), object: nil)
         }
 
-        // Execute Action only if changed
+        // Execute Action only if changed OR if hardware state doesn't match expected
+        let shouldBeCharging = (action == .chargeActive || action == .chargeNormal)
+        let hardwareMismatch = battery.isPluggedIn && (shouldBeCharging != battery.isCharging)
+
+        // Check if we've been stuck in a mismatched state for too long
+        let timeSinceLastChange = Date().timeIntervalSince(lastActionChangeTime)
+        let shouldRetry = hardwareMismatch && timeSinceLastChange > retryTimeout && retryCount < maxRetries
+
         if action != lastAction {
+            // Action changed - reset retry tracking
+            lastActionChangeTime = Date()
+            retryCount = 0
             executeAction(action)
 
             if lastAction != nil {
                 notifications.notifyChargingStateChanged(to: action)
             }
             lastAction = action
+        } else if hardwareMismatch && shouldRetry {
+            // Stuck in mismatched state - retry the SMC command
+            retryCount += 1
+            lastActionChangeTime = Date()
+            executeAction(action)
         }
 
         // Safety Checks

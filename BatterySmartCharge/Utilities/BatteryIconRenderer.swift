@@ -6,6 +6,18 @@ class BatteryIconRenderer {
     // Icon size optimized for menu bar
     private static let iconSize = NSSize(width: 20, height: 20)
 
+    /// Detect if menu bar is in dark mode (light text on dark background)
+    private static var isDarkMenuBar: Bool {
+        // Check effective appearance
+        let appearance = NSApp.effectiveAppearance
+        return appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+    }
+
+    /// Get the appropriate outline color for current appearance
+    private static var outlineColor: NSColor {
+        isDarkMenuBar ? .white : .black
+    }
+
     /// Main entry point: Generate a battery icon based on current state
     static func renderIcon(percentage: Int, isCharging: Bool, action: ChargingAction) -> NSImage {
         let image = NSImage(size: iconSize)
@@ -15,16 +27,16 @@ class BatteryIconRenderer {
         // Draw battery outline
         drawBatteryOutline()
 
-        // Draw battery fill based on percentage
+        // Draw battery fill based on percentage and action
         drawBatteryFill(percentage: percentage, action: action)
 
-        // Draw status indicator overlay (charging bolt, trickle icon, etc.)
-        drawStatusIndicator(isCharging: isCharging, action: action)
+        // Draw status indicator overlay (charging bolt, etc.)
+        drawStatusIndicator(action: action)
 
         image.unlockFocus()
 
-        // Make it work in menu bar (support light/dark mode)
-        image.isTemplate = true
+        // NOT a template - we want colors to show
+        image.isTemplate = false
 
         return image
     }
@@ -38,12 +50,12 @@ class BatteryIconRenderer {
         // Battery body outline
         let path = NSBezierPath(roundedRect: batteryRect, xRadius: 1.5, yRadius: 1.5)
         path.lineWidth = 1.5
-        NSColor.controlTextColor.setStroke()
+        outlineColor.setStroke()
         path.stroke()
 
         // Battery terminal (top nub)
         let terminalPath = NSBezierPath(roundedRect: terminalRect, xRadius: 0.75, yRadius: 0.75)
-        NSColor.controlTextColor.setFill()
+        outlineColor.setFill()
         terminalPath.fill()
     }
 
@@ -60,96 +72,76 @@ class BatteryIconRenderer {
         let fillHeight = (CGFloat(clamped) / 100.0) * fillMaxHeight
         let fillRect = CGRect(x: fillX, y: fillY, width: fillWidth, height: fillHeight)
 
-        // Use controlTextColor (adapts to light/dark mode) with different patterns/fills
-        // Solid fill for most states
-        NSColor.controlTextColor.setFill()
+        // Color based on charging action
+        let fillColor = colorForAction(action, percentage: clamped)
+        fillColor.setFill()
+
         let fillPath = NSBezierPath(roundedRect: fillRect, xRadius: 1, yRadius: 1)
         fillPath.fill()
     }
 
-    private static func drawStatusIndicator(isCharging: Bool, action: ChargingAction) {
+    private static func colorForAction(_ action: ChargingAction, percentage: Int) -> NSColor {
         switch action {
-        case .chargeActive:
-            // Draw charging bolt - larger and more prominent
-            drawChargingBolt()
-
-        case .chargeNormal:
-            // Draw regular charging bolt
-            drawChargingBolt()
-
+        case .chargeActive, .chargeNormal:
+            // Green when actively charging
+            return .systemGreen
         case .chargeTrickle:
-            // Draw trickle indicator (wavy line to indicate maintenance)
-            drawTrickleIndicator()
-
+            // Orange/yellow for trickle/maintenance
+            return .systemOrange
         case .rest:
-            // Draw small dot indicator for idle state
-            drawRestIndicator()
-
+            // Blue for idle/resting
+            return .systemBlue
         case .forceStop:
-            // Draw X to indicate stopped
+            // Red for stopped
+            return .systemRed
+        }
+    }
+
+    private static func drawStatusIndicator(action: ChargingAction) {
+        switch action {
+        case .chargeActive, .chargeNormal:
+            // Draw charging bolt
+            drawChargingBolt()
+        case .chargeTrickle:
+            // Draw trickle indicator (equals sign)
+            drawTrickleIndicator()
+        case .rest:
+            // Draw pause indicator
+            drawRestIndicator()
+        case .forceStop:
+            // Draw X indicator
             drawStopIndicator()
         }
     }
 
     private static func drawChargingBolt() {
-        // Lightning bolt overlay - positioned in center-right of battery
         let boltPath = NSBezierPath()
 
-        // Larger, more visible bolt
-        boltPath.move(to: CGPoint(x: 12, y: 13))
-        boltPath.line(to: CGPoint(x: 9.5, y: 9.5))
-        boltPath.line(to: CGPoint(x: 11, y: 9.5))
-        boltPath.line(to: CGPoint(x: 8.5, y: 6))
-        boltPath.line(to: CGPoint(x: 11, y: 9.5))
-        boltPath.line(to: CGPoint(x: 9.5, y: 9.5))
+        // Lightning bolt centered in battery
+        boltPath.move(to: CGPoint(x: 12, y: 14))
+        boltPath.line(to: CGPoint(x: 9, y: 10))
+        boltPath.line(to: CGPoint(x: 11, y: 10))
+        boltPath.line(to: CGPoint(x: 8, y: 5))
+        boltPath.line(to: CGPoint(x: 11, y: 9))
+        boltPath.line(to: CGPoint(x: 9, y: 9))
         boltPath.close()
 
-        // Use background color to cut out the bolt (creates contrast)
-        NSColor.controlBackgroundColor.setFill()
+        // White bolt for contrast against green fill
+        NSColor.white.setFill()
         boltPath.fill()
-
-        // Add a thin outline for definition
-        NSColor.controlTextColor.setStroke()
-        boltPath.lineWidth = 0.75
-        boltPath.stroke()
     }
 
     private static func drawTrickleIndicator() {
-        // Draw wavy/zigzag line to indicate trickle/maintenance mode
-        let path = NSBezierPath()
-        path.move(to: CGPoint(x: 8, y: 11))
-        path.line(to: CGPoint(x: 9, y: 9))
-        path.line(to: CGPoint(x: 10, y: 11))
-        path.line(to: CGPoint(x: 11, y: 9))
-        path.line(to: CGPoint(x: 12, y: 11))
-
-        NSColor.controlTextColor.setStroke()
-        path.lineWidth = 1.5
-        path.lineCapStyle = .round
-        path.lineJoinStyle = .round
-        path.stroke()
-    }
-
-    private static func drawRestIndicator() {
-        // Small circle to indicate idle/resting
-        let dotRect = CGRect(x: 9, y: 9, width: 2.5, height: 2.5)
-        let dot = NSBezierPath(ovalIn: dotRect)
-
-        NSColor.controlTextColor.setFill()
-        dot.fill()
-    }
-
-    private static func drawStopIndicator() {
-        // Draw X to indicate force stop
+        // Two horizontal lines (equals sign) for maintenance mode
         let line1 = NSBezierPath()
-        line1.move(to: CGPoint(x: 8.5, y: 8))
-        line1.line(to: CGPoint(x: 11.5, y: 12))
+        line1.move(to: CGPoint(x: 7, y: 11))
+        line1.line(to: CGPoint(x: 13, y: 11))
 
         let line2 = NSBezierPath()
-        line2.move(to: CGPoint(x: 11.5, y: 8))
-        line2.line(to: CGPoint(x: 8.5, y: 12))
+        line2.move(to: CGPoint(x: 7, y: 8))
+        line2.line(to: CGPoint(x: 13, y: 8))
 
-        NSColor.controlTextColor.setStroke()
+        NSColor.white.setStroke()
         line1.lineWidth = 2
         line2.lineWidth = 2
         line1.lineCapStyle = .round
@@ -158,4 +150,32 @@ class BatteryIconRenderer {
         line2.stroke()
     }
 
+    private static func drawRestIndicator() {
+        // Two vertical bars (pause symbol)
+        let bar1 = NSBezierPath(rect: CGRect(x: 7.5, y: 7, width: 2, height: 6))
+        let bar2 = NSBezierPath(rect: CGRect(x: 10.5, y: 7, width: 2, height: 6))
+
+        NSColor.white.setFill()
+        bar1.fill()
+        bar2.fill()
+    }
+
+    private static func drawStopIndicator() {
+        // X mark for force stop
+        let line1 = NSBezierPath()
+        line1.move(to: CGPoint(x: 7.5, y: 7))
+        line1.line(to: CGPoint(x: 12.5, y: 13))
+
+        let line2 = NSBezierPath()
+        line2.move(to: CGPoint(x: 12.5, y: 7))
+        line2.line(to: CGPoint(x: 7.5, y: 13))
+
+        NSColor.white.setStroke()
+        line1.lineWidth = 2.5
+        line2.lineWidth = 2.5
+        line1.lineCapStyle = .round
+        line2.lineCapStyle = .round
+        line1.stroke()
+        line2.stroke()
+    }
 }

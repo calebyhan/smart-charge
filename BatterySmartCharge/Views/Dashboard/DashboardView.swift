@@ -159,7 +159,8 @@ struct DashboardView: View {
                         Label("Force Full Charge", systemImage: "bolt.fill")
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
+                .focusable(false)
                 .controlSize(.small)
                 .disabled(!manager.monitor.state.isPluggedIn)
                 
@@ -169,7 +170,8 @@ struct DashboardView: View {
                     SettingsLink {
                         Image(systemName: "gearshape.fill")
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
+                    .focusable(false)
                     .simultaneousGesture(TapGesture().onEnded {
                         bringSettingsToFront()
                     })
@@ -179,7 +181,8 @@ struct DashboardView: View {
                     }) {
                         Image(systemName: "gearshape.fill")
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
+                    .focusable(false)
                 }
             }
         }

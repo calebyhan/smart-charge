@@ -37,8 +37,18 @@ class UpdateChecker: ObservableObject {
     }
 
     private func isNewerVersion(_ tagName: String) -> Bool {
-        let newVersion = tagName.replacingOccurrences(of: "v", with: "")
-        return newVersion.compare(currentVersion, options: .numeric) == .orderedDescending
+        let newVersion = normalizeVersion(tagName.replacingOccurrences(of: "v", with: ""))
+        let current = normalizeVersion(currentVersion)
+        return newVersion.compare(current, options: .numeric) == .orderedDescending
+    }
+
+    /// Normalize version strings to have 3 components (e.g., "1.0" -> "1.0.0")
+    private func normalizeVersion(_ version: String) -> String {
+        var components = version.split(separator: ".").map(String.init)
+        while components.count < 3 {
+            components.append("0")
+        }
+        return components.joined(separator: ".")
     }
 
     func openDownloadPage() {
