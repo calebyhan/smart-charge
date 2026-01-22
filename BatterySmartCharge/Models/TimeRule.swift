@@ -26,12 +26,13 @@ struct TimeRule: Codable, Identifiable {
         let currentMinutes = hour * 60 + minute
         let startMinutes = startHour * 60 + startMinute
         let endMinutes = endHour * 60 + endMinute
-        
+
         if startMinutes <= endMinutes {
-            return currentMinutes >= startMinutes && currentMinutes < endMinutes
+            // Inclusive upper bound - rule ending at 09:00 includes 09:00:00-09:00:59
+            return currentMinutes >= startMinutes && currentMinutes <= endMinutes
         } else {
-            // Spans overnight
-            return currentMinutes >= startMinutes || currentMinutes < endMinutes
+            // Spans overnight - inclusive upper bound
+            return currentMinutes >= startMinutes || currentMinutes <= endMinutes
         }
     }
 }

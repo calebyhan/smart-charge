@@ -1,6 +1,6 @@
 import Foundation
 
-enum ChargingAction: Equatable {
+enum ChargingAction: String, Equatable, Codable {
     case chargeActive
     case chargeNormal
     case chargeTrickle

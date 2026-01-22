@@ -9,7 +9,7 @@ class SmartChargeManager: ObservableObject {
     @Published var monitor = BatteryMonitor()
     @Published var settings = UserSettings()
     @Published var currentAction: ChargingAction = .rest
-    
+
     @Published var historyPoints: [Double] = []
     @Published var historyEntries: [BatteryHistoryEntry] = []
 
@@ -18,11 +18,49 @@ class SmartChargeManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     private var lastAction: ChargingAction?
-    private var overrideAction: ChargingAction?
+    private var overrideAction: ChargingAction? {
+        didSet {
+            // Persist override state for crash recovery
+            if let override = overrideAction {
+                UserDefaults.standard.set(override.rawValue, forKey: "overrideAction")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "overrideAction")
+            }
+        }
+    }
+
+    // Expose override state for UI
+    var isOverrideActive: Bool {
+        return overrideAction != nil
+    }
+
+    // Expose Apple optimization detection for UI
+    var isAppleOptimizationActive: Bool {
+        return appleOptimizationDetected
+    }
+
     private var lastActionChangeTime: Date = .distantPast
     private var retryCount: Int = 0
-    private let maxRetries: Int = 3
+    private let maxRetries: Int = 5 // Increased from 3 to 5
     private let retryTimeout: TimeInterval = 30 // seconds before retry
+    private let stuckResetTimeout: TimeInterval = 300 // 5 minutes - reset after this long
+
+    // Notification debouncing
+    private var lastTempWarningTime: Date = .distantPast
+    private var lastTempSafetyTime: Date = .distantPast
+    private var lastStuckNotificationTime: Date = .distantPast
+    private let tempNotificationInterval: TimeInterval = 60 // Only notify once per minute
+    private let stuckNotificationInterval: TimeInterval = 300 // Only notify once per 5 minutes
+
+    // Stuck state tracking (separate from action changes)
+    private var stuckStateDetectedTime: Date?
+    private var lastHardwareState: (isCharging: Bool, timestamp: Date)?
+    private var retriesExhausted: Bool = false
+
+    // Apple Optimized Battery Charging detection
+    private var appleOptimizationDetected: Bool = false
+    private var appleOptimizationDetectedTime: Date?
+    private let appleOptimizationDetectionThreshold: TimeInterval = 120 // 2 minutes stuck at ~80%
 
     // History tracking with timestamps
     private struct HistoryEntry {
@@ -45,6 +83,7 @@ class SmartChargeManager: ObservableObject {
     
     private init() {
         loadHistoryFromDefaults()
+        restoreOverrideState()
         setupSubscriptions()
         setupWakeNotification()
 
@@ -53,6 +92,14 @@ class SmartChargeManager: ObservableObject {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.evaluateState(battery: self.monitor.state)
+        }
+    }
+
+    private func restoreOverrideState() {
+        // Restore override state from UserDefaults for crash recovery
+        if let savedRawValue = UserDefaults.standard.string(forKey: "overrideAction"),
+           let action = ChargingAction(rawValue: savedRawValue) {
+            overrideAction = action
         }
     }
     
@@ -133,15 +180,19 @@ class SmartChargeManager: ObservableObject {
     
     func startOverride(action: ChargingAction) {
         self.overrideAction = action
-        evaluateState(battery: monitor.state)
-        
-        // Auto-clear override after 1 hour or when full (logic can be refined)
-        // For now, simpler: user manually toggles or we just let it run.
-        if action == .chargeActive {
-            // If charging to full, maybe we want to clear it when it hits 100?
+
+        // Clear Apple optimization detection - user explicitly wants control
+        if appleOptimizationDetected {
+            print("🔧 User override - clearing Apple optimization detection")
+            appleOptimizationDetected = false
+            appleOptimizationDetectedTime = nil
+            stuckStateDetectedTime = nil
+            retryCount = 0
         }
+
+        evaluateState(battery: monitor.state)
     }
-    
+
     func stopOverride() {
         self.overrideAction = nil
         evaluateState(battery: monitor.state)
@@ -224,12 +275,23 @@ class SmartChargeManager: ObservableObject {
 
         if let override = overrideAction {
             action = override
+            // Only log if action changed or in debug mode
+            if action != lastAction {
+                print("🔧 Override active: \(action.description)")
+            }
             // Auto-disable override if we reached full charge
+            // Clear immediately (atomic operation, no race condition)
             if override == .chargeActive && battery.percent >= 100 {
-                Task { @MainActor in
-                    self.overrideAction = nil
-                    // notifications.sendNotification(title: "Charge Complete", body: "Reached 100%")
-                }
+                overrideAction = nil
+                print("✅ Override cleared: battery reached 100%")
+                // Re-evaluate with override cleared to get algorithm action
+                action = ChargingAlgorithm.determineAction(
+                    battery: battery,
+                    settings: settings
+                )
+                print("📊 Algorithm decided: \(action.description)")
+                // Optionally notify user
+                // notifications.sendNotification(title: "Charge Complete", body: "Reached 100%")
             }
         } else {
             action = ChargingAlgorithm.determineAction(
@@ -249,63 +311,197 @@ class SmartChargeManager: ObservableObject {
         let shouldBeCharging = (action == .chargeActive || action == .chargeNormal)
         let hardwareMismatch = battery.isPluggedIn && (shouldBeCharging != battery.isCharging)
 
-        // Check if we've been stuck in a mismatched state for too long
-        let timeSinceLastChange = Date().timeIntervalSince(lastActionChangeTime)
-        let shouldRetry = hardwareMismatch && timeSinceLastChange > retryTimeout && retryCount < maxRetries
+        // Check if we should clear Apple optimization detection
+        if appleOptimizationDetected {
+            let shouldClearAppleMode =
+                battery.isCharging || // Apple started charging naturally
+                battery.percent < 78 || // Battery drained below Apple's threshold
+                battery.percent >= 95 || // Apple finished charging to high level
+                !battery.isPluggedIn // User unplugged
 
-        if action != lastAction {
-            // Action changed - reset retry tracking
-            lastActionChangeTime = Date()
-            retryCount = 0
-            executeAction(action)
-
-            if lastAction != nil {
-                notifications.notifyChargingStateChanged(to: action)
+            if shouldClearAppleMode {
+                print("✅ Apple optimization completed or conditions changed - resuming SmartCharge control")
+                print("   └─ Battery: \(battery.percent)%, Charging: \(battery.isCharging), Plugged: \(battery.isPluggedIn)")
+                appleOptimizationDetected = false
+                appleOptimizationDetectedTime = nil
+                stuckStateDetectedTime = nil
+                retryCount = 0
+                retriesExhausted = false
             }
-            lastAction = action
-        } else if hardwareMismatch && shouldRetry {
-            // Stuck in mismatched state - retry the SMC command
-            retryCount += 1
-            lastActionChangeTime = Date()
-            executeAction(action)
         }
 
-        // Safety Checks
+        // Track stuck states separately from action changes
+        if hardwareMismatch && !appleOptimizationDetected {
+            // Mismatch detected - start tracking if not already
+            if stuckStateDetectedTime == nil {
+                stuckStateDetectedTime = Date()
+                retriesExhausted = false
+                print("⚠️ Hardware mismatch detected: want charging=\(shouldBeCharging), actual=\(battery.isCharging)")
+            }
+
+            let timeSinceStuck = Date().timeIntervalSince(stuckStateDetectedTime!)
+            let shouldRetry = timeSinceStuck > retryTimeout && retryCount < maxRetries
+
+            // Detect Apple's Optimized Battery Charging
+            // Symptoms: stuck at ~80%, wanting to charge, hardware not charging
+            if !appleOptimizationDetected &&
+               battery.percent >= 78 && battery.percent <= 82 &&
+               shouldBeCharging && !battery.isCharging &&
+               timeSinceStuck > appleOptimizationDetectionThreshold {
+
+                appleOptimizationDetected = true
+                appleOptimizationDetectedTime = Date()
+                print("🍎 Apple Optimized Battery Charging detected at \(battery.percent)%")
+                print("   └─ Entering passive monitoring mode - will let Apple control charging")
+                print("   └─ SmartCharge will resume control when Apple finishes or battery changes")
+
+                // Notify user this is expected behavior
+                notifications.sendNotification(
+                    title: "Apple Battery Optimization Active",
+                    body: "Detected macOS battery health management at \(battery.percent)%. SmartCharge will resume control when Apple's optimization completes."
+                )
+
+                // Don't retry anymore - let Apple work
+                stuckStateDetectedTime = nil
+                retryCount = 0
+                retriesExhausted = false
+            }
+
+            // Check if we've been stuck for too long even after exhausting retries
+            // (only if we haven't detected Apple optimization)
+            if !appleOptimizationDetected && retryCount >= maxRetries && timeSinceStuck > stuckResetTimeout {
+                // Been stuck for 5+ minutes after max retries - likely Apple's Optimized Battery Charging
+                // Reset everything and notify user
+                if !retriesExhausted {
+                    retriesExhausted = true
+                    let now = Date()
+                    if now.timeIntervalSince(lastStuckNotificationTime) >= stuckNotificationInterval {
+                        print("🚨 Retries exhausted and stuck for 5+ minutes - likely macOS interference")
+                        print("💡 Suggestion: Check System Settings > Battery > Optimized Battery Charging")
+                        notifications.sendNotification(
+                            title: "Charging Control Issue",
+                            body: "Unable to control charging at \(battery.percent)%. This may be due to macOS Optimized Battery Charging. Check System Settings > Battery if you want SmartCharge to have full control."
+                        )
+                        lastStuckNotificationTime = now
+                    }
+                }
+
+                // Reset stuck state after notification to allow normal operation
+                // Don't spam retries if macOS is preventing charging
+                stuckStateDetectedTime = nil
+                retryCount = 0
+                retriesExhausted = false
+            }
+
+            if action != lastAction && !appleOptimizationDetected {
+                // Action changed while stuck - execute new action but don't reset retry counter
+                // Skip if Apple optimization detected (let Apple control it)
+                print("🔄 Action changed while stuck: \(lastAction?.description ?? "nil") → \(action.description)")
+                executeAction(action)
+                if lastAction != nil {
+                    notifications.notifyChargingStateChanged(to: action)
+                }
+                lastAction = action
+            } else if shouldRetry && !appleOptimizationDetected {
+                // Stuck in same state for too long - retry the SMC command
+                // Skip if Apple optimization detected (let Apple control it)
+                retryCount += 1
+                stuckStateDetectedTime = Date() // Reset stuck timer for next retry
+                executeAction(action)
+                print("⚠️ Stuck state detected: retry \(retryCount)/\(maxRetries) after \(Int(timeSinceStuck))s")
+
+                if retryCount >= maxRetries {
+                    print("🔴 Max retries exhausted - will monitor for 5 minutes before resetting")
+                    retriesExhausted = true
+                }
+            }
+        } else if hardwareMismatch && appleOptimizationDetected {
+            // In Apple optimization mode - just monitor, don't take action
+            // The clearing logic above will handle resuming control
+        } else {
+            // No mismatch - reset stuck state tracking
+            if stuckStateDetectedTime != nil {
+                print("✅ Stuck state resolved after \(retryCount) retries")
+            }
+            stuckStateDetectedTime = nil
+            retryCount = 0
+            retriesExhausted = false
+
+            if action != lastAction {
+                // Action changed normally - execute it
+                print("🔄 Action changed: \(lastAction?.description ?? "nil") → \(action.description)")
+                executeAction(action)
+                if lastAction != nil {
+                    notifications.notifyChargingStateChanged(to: action)
+                }
+                lastAction = action
+            }
+        }
+
+        // Safety Checks with notification debouncing
+        let now = Date()
         if battery.temperature >= settings.tempSafetyCutoff {
-            notifications.notifySafetyStop(temp: battery.temperature)
-            overrideAction = nil // Kill override for safety
+            // Critical safety cutoff - always clear override
+            overrideAction = nil
+            // Debounce notification (max once per minute)
+            if now.timeIntervalSince(lastTempSafetyTime) >= tempNotificationInterval {
+                notifications.notifySafetyStop(temp: battery.temperature)
+                lastTempSafetyTime = now
+            }
         } else if battery.temperature >= settings.tempPauseThreshold && lastAction != .rest && lastAction != .forceStop {
-            notifications.notifyHighTemperature(temp: battery.temperature)
+            // High temp warning - debounce notification
+            if now.timeIntervalSince(lastTempWarningTime) >= tempNotificationInterval {
+                notifications.notifyHighTemperature(temp: battery.temperature)
+                lastTempWarningTime = now
+            }
         }
     }
     
     private func executeAction(_ action: ChargingAction) {
         Task {
             do {
+                let shouldBeCharging: Bool
+                print("⚡️ Executing action: \(action.description)")
                 switch action {
                 case .chargeActive:
                     try await smc.enableCharging()
+                    shouldBeCharging = true
+                    print("   └─ SMC: Charging ENABLED (active)")
                 case .chargeNormal:
                     try await smc.enableCharging()
+                    shouldBeCharging = true
+                    print("   └─ SMC: Charging ENABLED (normal)")
                 case .chargeTrickle:
                     // Trickle charging: disable charging to let battery rest/drain slightly
                     // The algorithm will re-enable when battery drops below threshold
                     // This is simpler than using the maintain daemon and avoids daemon conflicts
                     try await smc.disableCharging()
+                    shouldBeCharging = false
+                    print("   └─ SMC: Charging DISABLED (trickle)")
                 case .rest, .forceStop:
                     try await smc.disableCharging()
+                    shouldBeCharging = false
+                    print("   └─ SMC: Charging DISABLED (rest/stop)")
                 }
 
-                // Aggressively poll for battery state changes after SMC command
-                // Poll every 200ms for the first 5 seconds to catch hardware changes quickly
-                for i in 0..<25 {
+                // Poll for battery state changes after SMC command
+                // Reduced from 25 to 15 iterations (3 seconds instead of 5)
+                // Exit early if hardware state matches expectation
+                for i in 0..<15 {
                     try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
                     await MainActor.run {
                         self.monitor.updateBatteryState(force: true)
                     }
+
+                    // Early exit if hardware state matches what we expect
+                    let currentState = await MainActor.run { self.monitor.state }
+                    if currentState.isPluggedIn && currentState.isCharging == shouldBeCharging {
+                        print("   └─ ✅ Hardware state matched after \(i + 1) polls (\((i + 1) * 200)ms)")
+                        break
+                    }
                 }
             } catch {
-                // Silently handle SMC errors
+                print("   └─ ❌ SMC command failed: \(error)")
             }
         }
     }

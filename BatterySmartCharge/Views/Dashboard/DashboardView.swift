@@ -24,9 +24,17 @@ struct DashboardView: View {
         let action = manager.currentAction
         let isCharging = manager.monitor.state.isCharging
         let isPluggedIn = manager.monitor.state.isPluggedIn
+        let percent = manager.monitor.state.percent
 
         // If we want to charge but hardware isn't charging yet (and we're plugged in)
         if (action == .chargeActive || action == .chargeNormal) && !isCharging && isPluggedIn {
+            // At very high battery levels (>= 95%), macOS often won't charge even when allowed
+            // This is normal Apple behavior to preserve battery longevity
+            // Don't show "Applying changes..." to avoid confusing the user
+            if percent >= 95 {
+                return false
+            }
+            // Between 80-94%, show mismatch but expect it might take longer to resolve
             return true
         }
         // If we want to rest/stop but hardware is still charging
@@ -84,12 +92,25 @@ struct DashboardView: View {
             .padding(.top, 4)
 
             // Show loading indicator when action and hardware state don't match
-            if isStateMismatched {
+            if isStateMismatched && !manager.isAppleOptimizationActive {
                 HStack(spacing: 6) {
                     ProgressView()
                         .scaleEffect(0.7)
                         .controlSize(.small)
                     Text("Applying changes...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, 4)
+            }
+
+            // Show Apple optimization indicator
+            if manager.isAppleOptimizationActive {
+                HStack(spacing: 6) {
+                    Image(systemName: "applelogo")
+                        .foregroundColor(.blue)
+                    Text("Apple Battery Optimization Active")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -152,7 +173,7 @@ struct DashboardView: View {
                 Button(action: {
                     toggleChargeToFull()
                 }) {
-                    if manager.currentAction == .chargeActive {
+                    if manager.isOverrideActive {
                         Label("Resume Smart Charge", systemImage: "arrow.uturn.backward")
                             .foregroundColor(.red)
                     } else {
@@ -228,7 +249,8 @@ struct DashboardView: View {
     // MARK: - Actions
 
     private func toggleChargeToFull() {
-        if manager.currentAction == .chargeActive {
+        // Check actual override state, not the desired action
+        if manager.isOverrideActive {
              manager.stopOverride()
         } else {
              manager.startOverride(action: .chargeActive)

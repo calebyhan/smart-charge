@@ -14,6 +14,8 @@ class BatteryMonitor: ObservableObject {
 
     // Track plug state ourselves - macOS reports ExternalConnected=No when we disable charging via SMC
     private var lastKnownPluggedInState: Bool = false
+    private var ambiguousStateStartTime: Date? = nil
+    private let ambiguousStateTimeout: TimeInterval = 2.0 // 2 seconds
 
     init() {
         startMonitoring()
@@ -122,17 +124,35 @@ class BatteryMonitor: ObservableObject {
                 if externalConnected {
                     // IOKit says plugged in - always trust (no false positives)
                     isPluggedIn = true
+                    self.ambiguousStateStartTime = nil // Clear ambiguous timer
                 } else if batteryPowerW > 0.5 {
                     // Battery charging - must be plugged despite IOKit saying otherwise
                     isPluggedIn = true
+                    self.ambiguousStateStartTime = nil // Clear ambiguous timer
                 } else if batteryPowerW < -0.5 {
                     // Battery discharging - definitely unplugged
                     isPluggedIn = false
+                    self.ambiguousStateStartTime = nil // Clear ambiguous timer
                 } else if !externalConnected && batteryPowerW <= 0 && !isCharging {
                     // IOKit says unplugged, battery not charging, power flow zero or negative
                     // Most likely actually unplugged (not just disabled charging)
-                    // Clear sticky state after 2 seconds of this condition
-                    isPluggedIn = false
+                    // Wait 2 seconds before clearing sticky state
+                    let now = Date()
+                    if let startTime = self.ambiguousStateStartTime {
+                        // Already in ambiguous state - check if timeout reached
+                        if now.timeIntervalSince(startTime) >= self.ambiguousStateTimeout {
+                            isPluggedIn = false
+                            self.ambiguousStateStartTime = nil
+                        }
+                        // else: keep sticky state, still within timeout
+                    } else {
+                        // First time seeing ambiguous state - start timer
+                        self.ambiguousStateStartTime = now
+                        // Keep sticky state for now
+                    }
+                } else {
+                    // Other ambiguous cases - keep sticky state
+                    self.ambiguousStateStartTime = nil
                 }
                 // else: keep sticky state (ambiguous - could be plugged with charging disabled)
 
