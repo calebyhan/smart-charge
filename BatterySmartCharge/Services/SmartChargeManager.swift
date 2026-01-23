@@ -62,6 +62,10 @@ class SmartChargeManager: ObservableObject {
     private var appleOptimizationDetectedTime: Date?
     private let appleOptimizationDetectionThreshold: TimeInterval = 120 // 2 minutes stuck at ~80%
 
+    // Action execution tracking (prevent parallel executions)
+    private var isExecutingAction: Bool = false
+    private var pendingAction: ChargingAction? = nil
+
     // History tracking with timestamps
     private struct HistoryEntry {
         let timestamp: Date
@@ -458,7 +462,16 @@ class SmartChargeManager: ObservableObject {
     }
     
     private func executeAction(_ action: ChargingAction) {
-        Task {
+        // Check if already executing - if so, queue the action
+        if isExecutingAction {
+            pendingAction = action
+            print("⏸️  Action queued (another action in progress): \(action.description)")
+            return
+        }
+
+        Task { @MainActor in
+            isExecutingAction = true
+
             do {
                 let shouldBeCharging: Bool
                 print("⚡️ Executing action: \(action.description)")
@@ -484,24 +497,46 @@ class SmartChargeManager: ObservableObject {
                     print("   └─ SMC: Charging DISABLED (rest/stop)")
                 }
 
+                // Wait for CLI to settle (daemon operations take time)
+                try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+
                 // Poll for battery state changes after SMC command
-                // Reduced from 25 to 15 iterations (3 seconds instead of 5)
+                // Reduced from 15 to 10 iterations (2 seconds instead of 3)
                 // Exit early if hardware state matches expectation
-                for i in 0..<15 {
+                for i in 0..<10 {
                     try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
-                    await MainActor.run {
-                        self.monitor.updateBatteryState(force: true)
-                    }
+                    self.monitor.updateBatteryState(force: true)
 
                     // Early exit if hardware state matches what we expect
-                    let currentState = await MainActor.run { self.monitor.state }
-                    if currentState.isPluggedIn && currentState.isCharging == shouldBeCharging {
-                        print("   └─ ✅ Hardware state matched after \(i + 1) polls (\((i + 1) * 200)ms)")
+                    if self.monitor.state.isPluggedIn && self.monitor.state.isCharging == shouldBeCharging {
+                        print("   └─ ✅ Hardware state matched after \(i + 1) polls (\((i + 1) * 200)ms + 1.5s settle)")
                         break
+                    }
+                }
+
+                // Verify state via CLI as final check (skip if sudo required)
+                if let verification = await smc.verifyChargingState() {
+                    let expectedSMC = shouldBeCharging
+                    let actualSMC = verification.enabled
+                    if expectedSMC != actualSMC {
+                        print("   └─ ⚠️ SMC verification mismatch: expected=\(expectedSMC), actual=\(actualSMC)")
+                        print("   └─ CLI status: \(verification.status.prefix(100))")
+                    } else {
+                        print("   └─ ✅ SMC verification passed")
                     }
                 }
             } catch {
                 print("   └─ ❌ SMC command failed: \(error)")
+            }
+
+            // Mark execution complete
+            isExecutingAction = false
+
+            // Execute pending action if one was queued
+            if let pending = pendingAction {
+                pendingAction = nil
+                print("▶️  Executing queued action: \(pending.description)")
+                executeAction(pending)
             }
         }
     }

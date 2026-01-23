@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_NAME="BatterySmartCharge"
 APP_NAME="${PROJECT_NAME}.app"
 HELPER_ID="com.smartcharge.powermetrics-helper"
-VERSION="1.0.2"
+VERSION="1.0.3"
 IDENTIFIER="com.smartcharge.BatterySmartCharge.installer"
 
 # Colors for output
@@ -119,6 +119,7 @@ if [ -f "$BATTERY_CLI" ]; then
 %admin ALL=NOPASSWD: ${BATTERY_CLI} adapter *
 %admin ALL=NOPASSWD: ${BATTERY_CLI} charge *
 %admin ALL=NOPASSWD: ${BATTERY_CLI} discharge *
+%admin ALL=NOPASSWD: ${BATTERY_CLI} status
 %admin ALL=NOPASSWD: ${BATTERY_CLI} visudo
 SUDOERS
 

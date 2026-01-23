@@ -2,15 +2,21 @@ import Foundation
 
 class SMCController {
     static let shared = SMCController()
-    
+
     private let batteryCLIPath = "/usr/local/bin/battery"
-    
+
+    // Semaphore to prevent concurrent CLI calls (battery CLI has internal daemon conflicts)
+    private let commandSemaphore = DispatchSemaphore(value: 1)
+    private var lastCommandTime: Date = .distantPast
+    private let minCommandInterval: TimeInterval = 1.0 // Minimum 1 second between CLI calls
+
     enum SMCError: Error {
         case cliNotFound
         case executionFailed(String)
         case outputParsingFailed
+        case timeout
     }
-    
+
     // Check if the battery CLI is installed and accessible
     var isCLIAvailable: Bool {
         return FileManager.default.fileExists(atPath: batteryCLIPath)
@@ -34,6 +40,50 @@ class SMCController {
         let target = max(0, min(100, percentage))
         try await runBatteryCommand(["maintain", String(target)])
     }
+
+    // Verify charging state via CLI status check
+    // Note: This may fail if battery CLI requires sudo and app doesn't have privileges
+    func verifyChargingState() async -> (enabled: Bool, status: String)? {
+        guard isCLIAvailable else { return nil }
+
+        let task = Process()
+        task.launchPath = "/usr/bin/sudo"
+        task.arguments = [batteryCLIPath, "status"]
+
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        task.standardError = pipe
+
+        do {
+            try task.run()
+
+            var timeWaited = 0.0
+            while task.isRunning && timeWaited < 3.0 {
+                try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+                timeWaited += 0.1
+            }
+
+            if task.isRunning {
+                task.terminate()
+                return nil
+            }
+
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            let output = String(data: data, encoding: .utf8) ?? ""
+
+            // Check if sudo failed
+            if output.contains("sudo: a terminal is required") || output.contains("password") {
+                // Gracefully skip verification - rely on IOKit monitoring instead
+                return nil
+            }
+
+            // Parse output: "Battery at 80% (charge; remaining), 12.234V, smc charging enabled"
+            let smcEnabled = output.contains("smc charging enabled")
+            return (enabled: smcEnabled, status: output)
+        } catch {
+            return nil
+        }
+    }
     
     private func runBatteryCommand(_ args: [String]) async throws {
         try runBatteryCommandSync(args)
@@ -44,25 +94,70 @@ class SMCController {
             throw SMCError.cliNotFound
         }
 
+        // Acquire semaphore to prevent concurrent CLI calls (max 5 second wait)
+        let timeout = DispatchTime.now() + .seconds(5)
+        guard commandSemaphore.wait(timeout: timeout) == .success else {
+            print("❌ SMC command timeout: another command is running")
+            throw SMCError.timeout
+        }
+
+        defer {
+            commandSemaphore.signal()
+        }
+
+        // Enforce minimum interval between commands to avoid CLI daemon conflicts
+        let now = Date()
+        let timeSinceLastCommand = now.timeIntervalSince(lastCommandTime)
+        if timeSinceLastCommand < minCommandInterval {
+            let sleepTime = minCommandInterval - timeSinceLastCommand
+            print("⏱️  Waiting \(Int(sleepTime * 1000))ms before next SMC command (avoiding CLI daemon conflict)")
+            Thread.sleep(forTimeInterval: sleepTime)
+        }
+
+        lastCommandTime = Date()
+
+        // Execute battery CLI command with timeout (using sudo for passwordless execution)
         let task = Process()
-        task.launchPath = batteryCLIPath
-        task.arguments = args
+        task.launchPath = "/usr/bin/sudo"
+        task.arguments = [batteryCLIPath] + args
 
         let pipe = Pipe()
         task.standardOutput = pipe
         task.standardError = pipe
 
+        // Add timeout to prevent hanging
+        let commandString = args.joined(separator: " ")
+        print("🔧 Executing: sudo battery \(commandString)")
+
         do {
             try task.run()
-            task.waitUntilExit()
+
+            // Wait with timeout (10 seconds max)
+            var timeWaited = 0.0
+            let pollInterval = 0.1
+            let maxWait = 10.0
+
+            while task.isRunning && timeWaited < maxWait {
+                Thread.sleep(forTimeInterval: pollInterval)
+                timeWaited += pollInterval
+            }
+
+            if task.isRunning {
+                task.terminate()
+                throw SMCError.executionFailed("Command timed out after \(Int(maxWait))s")
+            }
 
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             let output = String(data: data, encoding: .utf8) ?? ""
 
             if task.terminationStatus != 0 {
+                print("❌ Battery CLI failed (exit \(task.terminationStatus)): \(output.prefix(200))")
                 throw SMCError.executionFailed(output)
             }
+
+            print("✅ Battery CLI succeeded")
         } catch {
+            print("❌ Battery CLI error: \(error.localizedDescription)")
             throw SMCError.executionFailed(error.localizedDescription)
         }
     }
