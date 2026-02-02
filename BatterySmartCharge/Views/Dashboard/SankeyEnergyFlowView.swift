@@ -7,7 +7,8 @@ struct SankeyEnergyFlowView: View {
     let isCharging: Bool
     let batteryPower: Double // Positive when charging battery, negative when discharging
 
-    // Calculate "other" power (display, memory, storage, etc.)
+    // Calculate "other" power (display, SSD, memory, networking, ANE, peripherals, etc.)
+    // totalPower is the true system total from battery/adapter, so this is everything except CPU/GPU
     var otherPower: Double {
         max(0, totalPower - cpuPower - gpuPower)
     }

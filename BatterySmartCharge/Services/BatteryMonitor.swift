@@ -165,27 +165,37 @@ class BatteryMonitor: ObservableObject {
                 // Calculate percentage
                 let percent = maxCap > 0 ? Int((Double(currentCap) / Double(maxCap)) * 100.0) : 0
 
-                // Estimate power draw from voltage and current
-
-                var powerDrawW = abs((voltage / 1000.0) * (current / 1000.0))
                 var cpuPowerW = 0.0
                 var gpuPowerW = 0.0
+                var powerDrawW = 0.0
 
-                // Get detailed power metrics from PowerMetrics helper
+                // Get detailed CPU/GPU breakdown from PowerMetrics helper
                 if let pmCpu = PowerMetricsReader.shared.readCPUPower() {
                     cpuPowerW = pmCpu
                 }
                 if let pmGpu = PowerMetricsReader.shared.readGPUPower() {
                     gpuPowerW = pmGpu
                 }
-                if let pmTotal = PowerMetricsReader.shared.readSystemPower() {
-                    // Use PowerMetrics total if available (more accurate than IOKit)
-                    powerDrawW = pmTotal
+
+                // Get TRUE system power - try multiple sources in order of reliability:
+
+                // 1. First priority: Voltage × current from IOKit battery API
+                //    This measures actual power flow from battery/adapter and includes ALL components
+                //    (CPU, GPU, display, SSD, memory, networking, ANE, etc.)
+                let voltageCurrentPower = abs((voltage / 1000.0) * (current / 1000.0))
+                if voltageCurrentPower > 0.1 {
+                    powerDrawW = voltageCurrentPower
                 }
 
-                // If still no power data, try SMC (Intel fallback)
+                // 2. Second priority: SMC direct reading (Intel Macs fallback)
                 if powerDrawW < 0.1, let smcPower = SMCNative.shared.readSystemPower() {
                     powerDrawW = smcPower
+                }
+
+                // 3. Third priority: PowerMetrics combined power (CPU+GPU only, not true system total)
+                //    This is only used as a last resort when other methods fail
+                if powerDrawW < 0.1, let pmTotal = PowerMetricsReader.shared.readSystemPower() {
+                    powerDrawW = pmTotal
                 }
 
                 // batteryPowerW already calculated above for isCharging detection

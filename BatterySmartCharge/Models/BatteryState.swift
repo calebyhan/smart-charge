@@ -4,9 +4,9 @@ struct BatteryState {
     let percent: Int
     let isCharging: Bool
     let isPluggedIn: Bool
-    let powerDraw: Double // in Watts (total system power)
-    let cpuPower: Double // in Watts
-    let gpuPower: Double // in Watts
+    let powerDraw: Double // in Watts (TRUE total system power from battery/adapter, includes CPU, GPU, display, SSD, memory, etc.)
+    let cpuPower: Double // in Watts (CPU only)
+    let gpuPower: Double // in Watts (GPU only)
     let batteryPower: Double // in Watts (positive = charging, negative = discharging)
     let temperature: Double // in Celsius
     let health: Int

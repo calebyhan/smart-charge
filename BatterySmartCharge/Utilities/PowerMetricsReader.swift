@@ -167,7 +167,7 @@ class PowerMetricsReader {
         }
 
         if data.combinedPower > 0 {
-            log("PowerMetrics: power=\(data.combinedPower)W")
+            log("PowerMetrics: power=\(data.combinedPower)W (cpu=\(data.cpuPower)W, gpu=\(data.gpuPower)W)")
         }
 
         return data

@@ -19,7 +19,7 @@ class BatteryIconRenderer {
     }
 
     /// Main entry point: Generate a battery icon based on current state
-    static func renderIcon(percentage: Int, isCharging: Bool, action: ChargingAction) -> NSImage {
+    static func renderIcon(percentage: Int, isCharging: Bool, isPluggedIn: Bool, action: ChargingAction) -> NSImage {
         let image = NSImage(size: iconSize)
 
         image.lockFocus()
@@ -28,10 +28,12 @@ class BatteryIconRenderer {
         drawBatteryOutline()
 
         // Draw battery fill based on percentage and action
-        drawBatteryFill(percentage: percentage, action: action)
+        drawBatteryFill(percentage: percentage, isPluggedIn: isPluggedIn, action: action)
 
-        // Draw status indicator overlay (charging bolt, etc.)
-        drawStatusIndicator(action: action)
+        // Draw status indicator overlay (charging bolt, etc.) - only when plugged in
+        if isPluggedIn {
+            drawStatusIndicator(action: action)
+        }
 
         image.unlockFocus()
 
@@ -59,7 +61,7 @@ class BatteryIconRenderer {
         terminalPath.fill()
     }
 
-    private static func drawBatteryFill(percentage: Int, action: ChargingAction) {
+    private static func drawBatteryFill(percentage: Int, isPluggedIn: Bool, action: ChargingAction) {
         let clamped = max(0, min(100, percentage))
 
         // Battery interior dimensions (with padding)
@@ -72,15 +74,21 @@ class BatteryIconRenderer {
         let fillHeight = (CGFloat(clamped) / 100.0) * fillMaxHeight
         let fillRect = CGRect(x: fillX, y: fillY, width: fillWidth, height: fillHeight)
 
-        // Color based on charging action
-        let fillColor = colorForAction(action, percentage: clamped)
+        // Color based on charging action and plugged-in state
+        let fillColor = colorForAction(action, percentage: clamped, isPluggedIn: isPluggedIn)
         fillColor.setFill()
 
         let fillPath = NSBezierPath(roundedRect: fillRect, xRadius: 1, yRadius: 1)
         fillPath.fill()
     }
 
-    private static func colorForAction(_ action: ChargingAction, percentage: Int) -> NSColor {
+    private static func colorForAction(_ action: ChargingAction, percentage: Int, isPluggedIn: Bool) -> NSColor {
+        // When on battery (not plugged in), show neutral gray
+        if !isPluggedIn {
+            return .systemGray
+        }
+
+        // When plugged in, show colors based on charging action
         switch action {
         case .chargeActive, .chargeNormal:
             // Green when actively charging
@@ -89,7 +97,7 @@ class BatteryIconRenderer {
             // Orange/yellow for trickle/maintenance
             return .systemOrange
         case .rest:
-            // Blue for idle/resting
+            // Blue for idle/resting (plugged in but not charging)
             return .systemBlue
         case .forceStop:
             // Red for stopped

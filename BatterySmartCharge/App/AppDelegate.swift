@@ -72,6 +72,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 if popover.isShown {
                     popover.performClose(sender)
                 } else {
+                    // Activate the app so the popover is immediately interactive
+                    NSApp.activate(ignoringOtherApps: true)
                     popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
                 }
             }
@@ -104,6 +106,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.image = BatteryIconRenderer.renderIcon(
                 percentage: state.percent,
                 isCharging: state.isCharging,
+                isPluggedIn: state.isPluggedIn,
                 action: action
             )
         }
