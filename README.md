@@ -25,7 +25,7 @@
 ### For Users
 
 1.  **Download**: Get `BatterySmartCharge-1.0.4.pkg` from the [Releases](https://github.com/yourusername/smart-charge/releases) page.
-2.  **Install**: Double-click the `.pkg` file and follow the installer prompts.
+2.  **Install**: Double-click the `.pkg` file and follow the installer prompts. (If MacOS blocks the installation, press "Done" then go to System Settings > Privacy & Security and click "Open Anyway".)
 3.  **Authorize**: Enter your password when prompted (required for power monitoring helper).
 4.  **Run**: The app will be installed to `/Applications/`. Launch it from there.
 
