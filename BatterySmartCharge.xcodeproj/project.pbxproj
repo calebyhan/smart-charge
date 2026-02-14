@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A98DAA52F4136DD00EE45E2 /* IOReportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A98DAA42F4136DD00EE45E2 /* IOReportReader.swift */; };
 		5AB922172F207429005B277C /* com.smartcharge.powermetrics-helper.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5AB922162F207429005B277C /* com.smartcharge.powermetrics-helper.plist */; };
 		APP001 /* BatterySmartChargeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC001 /* BatterySmartChargeApp.swift */; };
 		APP002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRC002 /* AppDelegate.swift */; };
@@ -66,6 +67,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5A98DAA42F4136DD00EE45E2 /* IOReportReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOReportReader.swift; sourceTree = "<group>"; };
 		5AB922162F207429005B277C /* com.smartcharge.powermetrics-helper.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "com.smartcharge.powermetrics-helper.plist"; sourceTree = "<group>"; };
 		CFG001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CFG002 /* BatterySmartCharge.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BatterySmartCharge.entitlements; sourceTree = "<group>"; };
@@ -180,6 +182,7 @@
 		GRP005 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				5A98DAA42F4136DD00EE45E2 /* IOReportReader.swift */,
 				SRC012 /* SMCNative.swift */,
 				SRC013 /* LaunchHelper.swift */,
 				SRC014 /* PowerMetricsReader.swift */,
@@ -380,6 +383,7 @@
 				APP009 /* SMCController.swift in Sources */,
 				APP009A /* UpdateChecker.swift in Sources */,
 				APP010 /* ChargingAlgorithm.swift in Sources */,
+				5A98DAA52F4136DD00EE45E2 /* IOReportReader.swift in Sources */,
 				APP011 /* NotificationManager.swift in Sources */,
 				APP012 /* SMCNative.swift in Sources */,
 				APP013 /* LaunchHelper.swift in Sources */,
@@ -551,7 +555,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartcharge.BatterySmartCharge;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -581,7 +585,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.smartcharge.BatterySmartCharge;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -599,7 +603,7 @@
 				DEVELOPMENT_TEAM = MBD2T58JVW;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = PowerMetricsHelper/Info.plist;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,
@@ -622,7 +626,7 @@
 				DEVELOPMENT_TEAM = MBD2T58JVW;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = PowerMetricsHelper/Info.plist;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,

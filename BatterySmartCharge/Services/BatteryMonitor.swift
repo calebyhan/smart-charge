@@ -167,35 +167,78 @@ class BatteryMonitor: ObservableObject {
 
                 var cpuPowerW = 0.0
                 var gpuPowerW = 0.0
+                var dramPowerW = 0.0  // DRAM power (new from IOReport)
                 var powerDrawW = 0.0
 
-                // Get detailed CPU/GPU breakdown from PowerMetrics helper
-                if let pmCpu = PowerMetricsReader.shared.readCPUPower() {
-                    cpuPowerW = pmCpu
+                // Priority 1: Try IOReport (best - no sudo, includes DRAM, accurate)
+                var gotIOReportData = false
+                if let ioMetrics = IOReportReader.shared.getPowerMetrics() {
+                    cpuPowerW = ioMetrics.cpuPower
+                    gpuPowerW = ioMetrics.gpuPower
+                    dramPowerW = ioMetrics.dramPower
+                    // Use systemPower if available (includes everything)
+                    if ioMetrics.systemPower > 0.1 {
+                        powerDrawW = ioMetrics.systemPower
+                    }
+                    gotIOReportData = true
                 }
-                if let pmGpu = PowerMetricsReader.shared.readGPUPower() {
-                    gpuPowerW = pmGpu
+
+                // Priority 2: Fall back to PowerMetrics helper (XPC/subprocess)
+                if !gotIOReportData {
+                    if let pmCpu = PowerMetricsReader.shared.readCPUPower() {
+                        cpuPowerW = pmCpu
+                    }
+                    if let pmGpu = PowerMetricsReader.shared.readGPUPower() {
+                        gpuPowerW = pmGpu
+                    }
                 }
 
                 // Get TRUE system power - try multiple sources in order of reliability:
 
-                // 1. First priority: Voltage × current from IOKit battery API
-                //    This measures actual power flow from battery/adapter and includes ALL components
-                //    (CPU, GPU, display, SSD, memory, networking, ANE, etc.)
+                // Strategy depends on whether we're plugged in or not:
+                // - UNPLUGGED: All power flows through battery, so voltage×current = total system power
+                // - PLUGGED IN: Battery current only shows charging power, not total system consumption
+                //               Use IOReport system power if available, otherwise estimate
+
                 let voltageCurrentPower = abs((voltage / 1000.0) * (current / 1000.0))
-                if voltageCurrentPower > 0.1 {
-                    powerDrawW = voltageCurrentPower
-                }
 
-                // 2. Second priority: SMC direct reading (Intel Macs fallback)
-                if powerDrawW < 0.1, let smcPower = SMCNative.shared.readSystemPower() {
-                    powerDrawW = smcPower
-                }
+                // If we already got powerDraw from IOReport systemPower, we're done
+                if powerDrawW > 0.1 {
+                    // IOReport provided accurate system power - use it
+                } else if !isPluggedIn {
+                    // UNPLUGGED: Use voltage×current (accurate - all power from battery)
+                    if voltageCurrentPower > 0.1 {
+                        powerDrawW = voltageCurrentPower
+                    } else if let smcPower = SMCNative.shared.readSystemPower() {
+                        powerDrawW = smcPower
+                    } else if let pmTotal = PowerMetricsReader.shared.readSystemPower() {
+                        powerDrawW = pmTotal
+                    }
+                } else {
+                    // PLUGGED IN: Estimate total system consumption
+                    // Priority 1: SMC direct reading (Intel Macs)
+                    if let smcPower = SMCNative.shared.readSystemPower() {
+                        powerDrawW = smcPower
+                    }
+                    // Priority 2: CPU + GPU + DRAM + estimated display/peripheral overhead
+                    // Now includes DRAM from IOReport! Much more accurate than before.
+                    else if cpuPowerW > 0 || gpuPowerW > 0 || dramPowerW > 0 {
+                        // Known components from measurements
+                        let measuredPower = cpuPowerW + gpuPowerW + dramPowerW
 
-                // 3. Third priority: PowerMetrics combined power (CPU+GPU only, not true system total)
-                //    This is only used as a last resort when other methods fail
-                if powerDrawW < 0.1, let pmTotal = PowerMetricsReader.shared.readSystemPower() {
-                    powerDrawW = pmTotal
+                        // Estimate display + SSD + networking + peripherals
+                        // Display is the biggest unknown (2-5W depending on brightness)
+                        // Other components: ~1-2W total
+                        let estimatedOther = 3.5 // Display ~2.5W + other ~1W (conservative)
+
+                        powerDrawW = measuredPower + estimatedOther
+                    }
+                    // Priority 3: PowerMetrics fallback (CPU+GPU only, no DRAM)
+                    else if let pmTotal = PowerMetricsReader.shared.readSystemPower() {
+                        // PowerMetrics gives CPU+GPU+ANE but misses DRAM and display
+                        let estimatedOtherPower = 5.0 // DRAM ~1-2W + Display ~2-5W + other ~1W
+                        powerDrawW = pmTotal + estimatedOtherPower
+                    }
                 }
 
                 // batteryPowerW already calculated above for isCharging detection
