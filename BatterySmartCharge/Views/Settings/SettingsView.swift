@@ -152,7 +152,7 @@ struct AboutView: View {
             Text("Smart Charge")
                 .font(.title)
 
-            Text("Version 1.0.6")
+            Text("Version 1.0.7")
                 .font(.caption)
 
             Text("Intelligent battery management for macOS.")

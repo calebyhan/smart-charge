@@ -84,6 +84,18 @@ class SMCController {
                 print("⚠️ Failed to stop battery maintain: \(error)")
             }
         }
+
+        // Remove the maintain.percentage file which can cause oscillation if set to invalid values
+        let maintainFile = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".battery/maintain.percentage")
+        if FileManager.default.fileExists(atPath: maintainFile.path) {
+            do {
+                try FileManager.default.removeItem(at: maintainFile)
+                print("✅ Removed battery maintain.percentage file")
+            } catch {
+                print("⚠️ Failed to remove maintain.percentage: \(error)")
+            }
+        }
     }
     
     func enableCharging() async throws {
