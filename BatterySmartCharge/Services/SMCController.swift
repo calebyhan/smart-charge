@@ -21,6 +21,70 @@ class SMCController {
     var isCLIAvailable: Bool {
         return FileManager.default.fileExists(atPath: batteryCLIPath)
     }
+
+    /// Permanently removes the battery CLI's background daemon to prevent conflicts with SmartCharge.
+    /// The battery CLI runs its own LaunchAgent that fights with our charging commands, causing oscillation.
+    func disableBatteryDaemon() {
+        let plistPath = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/LaunchAgents/battery.plist")
+
+        guard FileManager.default.fileExists(atPath: plistPath.path) else {
+            print("✅ No battery daemon plist found - no conflict expected")
+            return
+        }
+
+        print("⚠️ Found battery CLI daemon at \(plistPath.path) - removing permanently")
+
+        // Unload the daemon first
+        let unloadTask = Process()
+        unloadTask.launchPath = "/bin/launchctl"
+        unloadTask.arguments = ["unload", plistPath.path]
+
+        do {
+            try unloadTask.run()
+            unloadTask.waitUntilExit()
+        } catch {
+            print("⚠️ Failed to unload battery daemon: \(error)")
+        }
+
+        // Delete the plist to prevent it from being loaded again
+        do {
+            try FileManager.default.removeItem(at: plistPath)
+            print("✅ Battery daemon plist removed permanently")
+        } catch {
+            print("⚠️ Failed to remove battery daemon plist: \(error)")
+        }
+
+        // Run 'battery maintain stop' to ensure any running maintain process is stopped
+        if isCLIAvailable {
+            let stopTask = Process()
+            stopTask.launchPath = "/usr/bin/sudo"
+            stopTask.arguments = [batteryCLIPath, "maintain", "stop"]
+
+            let pipe = Pipe()
+            stopTask.standardOutput = pipe
+            stopTask.standardError = pipe
+
+            do {
+                try stopTask.run()
+
+                // Wait with timeout
+                var waited = 0.0
+                while stopTask.isRunning && waited < 5.0 {
+                    Thread.sleep(forTimeInterval: 0.1)
+                    waited += 0.1
+                }
+
+                if stopTask.isRunning {
+                    stopTask.terminate()
+                }
+
+                print("✅ Battery maintain stopped")
+            } catch {
+                print("⚠️ Failed to stop battery maintain: \(error)")
+            }
+        }
+    }
     
     func enableCharging() async throws {
         try await runBatteryCommand(["charging", "on"])

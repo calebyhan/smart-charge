@@ -1,14 +1,14 @@
 import Foundation
 
 class ChargingAlgorithm {
-    
+
     // Pure function to determine the next action
     static func determineAction(
         battery: BatteryState,
         settings: UserSettings,
         currentDate: Date = Date()
     ) -> ChargingAction {
-        
+
         // 1. Safety Checks (Prioritize these above all)
         if battery.temperature >= settings.tempSafetyCutoff {
             return .forceStop

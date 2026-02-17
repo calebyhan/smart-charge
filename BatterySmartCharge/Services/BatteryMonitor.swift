@@ -17,6 +17,11 @@ class BatteryMonitor: ObservableObject {
     private var ambiguousStateStartTime: Date? = nil
     private let ambiguousStateTimeout: TimeInterval = 2.0 // 2 seconds
 
+    // Hysteresis for charging detection to prevent oscillation at threshold
+    private var lastKnownChargingState: Bool = false
+    private let chargingOnThreshold: Double = 1.0   // Must exceed 1W to start "charging"
+    private let chargingOffThreshold: Double = 0.2  // Must drop below 0.2W to stop "charging"
+
     init() {
         startMonitoring()
         setupPowerSourceNotifications()
@@ -125,12 +130,12 @@ class BatteryMonitor: ObservableObject {
                     // IOKit says plugged in - always trust (no false positives)
                     isPluggedIn = true
                     self.ambiguousStateStartTime = nil // Clear ambiguous timer
-                } else if batteryPowerW > 0.5 {
-                    // Battery charging - must be plugged despite IOKit saying otherwise
+                } else if batteryPowerW > self.chargingOnThreshold {
+                    // Battery clearly charging - must be plugged despite IOKit saying otherwise
                     isPluggedIn = true
                     self.ambiguousStateStartTime = nil // Clear ambiguous timer
-                } else if batteryPowerW < -0.5 {
-                    // Battery discharging - definitely unplugged
+                } else if batteryPowerW < -1.0 {
+                    // Battery clearly discharging (>1W drain) - definitely unplugged
                     isPluggedIn = false
                     self.ambiguousStateStartTime = nil // Clear ambiguous timer
                 } else if !externalConnected && batteryPowerW <= 0 && !isCharging {
@@ -156,8 +161,16 @@ class BatteryMonitor: ObservableObject {
                 }
                 // else: keep sticky state (ambiguous - could be plugged with charging disabled)
 
-                // Determine charging state
-                isCharging = (batteryPowerW > 0.5)
+                // Determine charging state with hysteresis to prevent oscillation
+                // Use different thresholds for on→off vs off→on transitions
+                if self.lastKnownChargingState {
+                    // Currently "charging" - only switch to not charging if power drops significantly
+                    isCharging = (batteryPowerW > self.chargingOffThreshold)
+                } else {
+                    // Currently "not charging" - only switch to charging if power rises significantly
+                    isCharging = (batteryPowerW > self.chargingOnThreshold)
+                }
+                self.lastKnownChargingState = isCharging
 
                 // Update sticky state
                 self.lastKnownPluggedInState = isPluggedIn

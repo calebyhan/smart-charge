@@ -12,6 +12,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // This is critical for re-enabling charging when the app quits
         ProcessInfo.processInfo.disableSuddenTermination()
 
+        // Disable battery CLI daemon to prevent conflicts with SmartCharge
+        // The battery CLI has its own background daemon that can fight with our charging commands
+        SMCController.shared.disableBatteryDaemon()
+
         // Install privileged helper for power metrics (prompts for admin password on first run)
         PrivilegedHelperManager.shared.installHelperIfNeeded { _, _ in
             // Silent installation
