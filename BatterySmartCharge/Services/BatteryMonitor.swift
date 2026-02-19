@@ -358,13 +358,15 @@ class BatteryMonitor: ObservableObject {
             cycleCount = cycleValue
         }
 
-        // Health: MaxCapacity / DesignCapacity * 100
-        if let maxCapRef = IORegistryEntryCreateCFProperty(service, "MaxCapacity" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue(),
+        // Health: AppleRawMaxCapacity / DesignCapacity * 100
+        // Note: MaxCapacity is already a percentage (0-100), not mAh
+        // AppleRawMaxCapacity is the actual current capacity in mAh
+        if let rawMaxCapRef = IORegistryEntryCreateCFProperty(service, "AppleRawMaxCapacity" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue(),
            let designCapRef = IORegistryEntryCreateCFProperty(service, "DesignCapacity" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue(),
-           let maxCap = maxCapRef as? Int,
+           let rawMaxCap = rawMaxCapRef as? Int,
            let designCap = designCapRef as? Int,
            designCap > 0 {
-            health = Int((Double(maxCap) / Double(designCap)) * 100.0)
+            health = Int((Double(rawMaxCap) / Double(designCap)) * 100.0)
         }
 
         // Get battery capacity in Wh for time remaining calculation

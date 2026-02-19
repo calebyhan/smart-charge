@@ -2,13 +2,17 @@ import UserNotifications
 
 class NotificationManager {
     static let shared = NotificationManager()
-    
+
+    // Debounce state for action notifications
+    private var lastActionNotificationTime: Date = .distantPast
+    private let actionNotificationInterval: TimeInterval = 30  // Max once per 30s
+
     init() {
         if isBundleValid {
             requestAuthorization()
         }
     }
-    
+
     private var isBundleValid: Bool {
         return Bundle.main.bundleIdentifier != nil
     }
@@ -36,7 +40,11 @@ class NotificationManager {
     }
     
     func notifyChargingStateChanged(to action: ChargingAction) {
-        // Debounce logic could be added here to avoid spamming
+        let now = Date()
+        guard now.timeIntervalSince(lastActionNotificationTime) >= actionNotificationInterval else {
+            return  // Debounce: skip notification if sent recently
+        }
+        lastActionNotificationTime = now
         sendNotification(
             title: "Charging Status Updated",
             body: "Switched to: \(action.description)"

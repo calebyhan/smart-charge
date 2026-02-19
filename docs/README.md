@@ -6,14 +6,14 @@ Welcome to the detailed documentation for Smart Charge.
 
 *   **[User Guide](USER_GUIDE.md)**
     *   Detailed feature specifications.
-    *   Configuration and "Charging Modes" (Availability, Longevity, Custom).
+    *   Charging thresholds and time rules.
     *   User Interface reference (Dashboard, Settings).
     *   Notification types.
 
 *   **[Architecture](ARCHITECTURE.md)**
     *   System components and diagrams.
     *   Data flow references.
-    *   Core data models (`BatteryState`, `ChargingMode`, etc.).
+    *   Core data models (`BatteryState`, `ChargingAction`, etc.).
 
 *   **[Development](DEVELOPMENT.md)**
     *   Technical stack constraints and requirements.
@@ -24,6 +24,6 @@ Welcome to the detailed documentation for Smart Charge.
 ## Core Philosophy
 
 *   **Availability First**: Never leave users stranded with low battery.
-*   **Simple & Deterministic**: Time-based + power-draw logic, minimal "black box" pattern learning.
-*   **Manual Control with Smart Defaults**: Users set rules, app executes intelligently.
-*   **Native Experience**: Lightweight, fast, macOS-native UI.
+*   **Simple & Deterministic**: Threshold-based logic with temperature safety, minimal "black box" pattern learning.
+*   **Manual Control with Smart Defaults**: Users set min/max thresholds, app executes intelligently.
+*   **Native Experience**: Lightweight, fast, macOS-native menu bar app.

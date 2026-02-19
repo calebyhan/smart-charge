@@ -21,9 +21,14 @@ struct BatteryState {
         cpuPower: 0.0,
         gpuPower: 0.0,
         batteryPower: 0.0,
-        temperature: 0.0,
+        temperature: -999.0,  // Sentinel value indicating sensor unavailable
         health: 100,
         cycleCount: 0,
         timeRemaining: nil
     )
+
+    /// Whether the temperature reading is valid (not a sensor failure)
+    var hasValidTemperature: Bool {
+        temperature > -50 && temperature < 100
+    }
 }

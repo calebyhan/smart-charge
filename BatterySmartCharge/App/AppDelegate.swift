@@ -1,7 +1,7 @@
 import SwiftUI
 import Cocoa
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     var statusItem: NSStatusItem?
     var popover: NSPopover?
     var manager = SmartChargeManager.shared // The source of truth
@@ -44,9 +44,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let popover = NSPopover()
         popover.contentSize = NSSize(width: 360, height: 500)
         popover.behavior = .transient
+        popover.delegate = self
         // Inject manager here
         popover.contentViewController = NSHostingController(rootView: DashboardView(manager: manager))
         self.popover = popover
+    }
+
+    // MARK: - NSPopoverDelegate
+
+    func popoverDidShow(_ notification: Notification) {
+        // Ensure focus when popover appears
+        // Small delay to ensure the window is fully created
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            NSApp.activate(ignoringOtherApps: true)
+            if let popoverWindow = self.popover?.contentViewController?.view.window {
+                popoverWindow.makeKey()
+                popoverWindow.orderFrontRegardless()
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -76,11 +91,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 if popover.isShown {
                     popover.performClose(sender)
                 } else {
-                    // Activate the app so the popover is immediately interactive
-                    NSApp.activate(ignoringOtherApps: true)
-                    popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+                    showPopover(relativeTo: button)
                 }
             }
+        }
+    }
+
+    private func showPopover(relativeTo button: NSStatusBarButton) {
+        guard let popover = popover else { return }
+
+        // Activate app first
+        NSApp.activate(ignoringOtherApps: true)
+
+        // Show the popover
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+
+        // Ensure the popover's window becomes key and is brought to front
+        if let popoverWindow = popover.contentViewController?.view.window {
+            popoverWindow.makeKey()
         }
     }
 

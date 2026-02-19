@@ -24,7 +24,7 @@
 
 ### For Users
 
-1.  **Download**: Get `BatterySmartCharge-1.0.7.pkg` from the [Releases](https://github.com/yourusername/smart-charge/releases) page.
+1.  **Download**: Get `BatterySmartCharge-1.1.0.pkg` from the [Releases](https://github.com/yourusername/smart-charge/releases) page.
 2.  **Install**: Double-click the `.pkg` file and follow the installer prompts. (If MacOS blocks the installation, press "Done" then go to System Settings > Privacy & Security and click "Open Anyway".)
 3.  **Authorize**: Enter your password when prompted (required for power monitoring helper).
 4.  **Run**: The app will be installed to `/Applications/`. Launch it from there.
@@ -46,7 +46,7 @@ xcodebuild -project BatterySmartCharge.xcodeproj -scheme BatterySmartCharge -con
 ./create_installer.sh
 ```
 
-The installer will be created at `dist/BatterySmartCharge-1.0.7.pkg`
+The installer will be created at `dist/BatterySmartCharge-1.1.0.pkg`
 
 **Note**: The installer automatically bundles the `battery` CLI tool. If building the installer yourself, ensure `battery` is installed on your system (`brew install battery`) so it can be bundled.
 

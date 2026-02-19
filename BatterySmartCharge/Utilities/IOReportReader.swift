@@ -80,25 +80,21 @@ class IOReportReader {
 
         // Load function pointers from global symbol space
         guard let copyChannels = dlsym(RTLD_DEFAULT_HANDLE, "IOReportCopyChannelsInGroup") else {
-            log("IOReport: Failed to find IOReportCopyChannelsInGroup")
             isAvailable = false
             return
         }
 
         guard let createSub = dlsym(RTLD_DEFAULT_HANDLE, "IOReportCreateSubscription") else {
-            log("IOReport: Failed to find IOReportCreateSubscription")
             isAvailable = false
             return
         }
 
         guard let createSamp = dlsym(RTLD_DEFAULT_HANDLE, "IOReportCreateSamples") else {
-            log("IOReport: Failed to find IOReportCreateSamples")
             isAvailable = false
             return
         }
 
         guard let createDelta = dlsym(RTLD_DEFAULT_HANDLE, "IOReportCreateSamplesDelta") else {
-            log("IOReport: Failed to find IOReportCreateSamplesDelta")
             isAvailable = false
             return
         }
@@ -110,7 +106,6 @@ class IOReportReader {
         createSamplesDelta = unsafeBitCast(createDelta, to: IOReportCreateSamplesDeltaFunc.self)
 
         isAvailable = true
-        log("IOReport: Functions loaded successfully")
     }
 
     // MARK: - Setup
@@ -118,25 +113,19 @@ class IOReportReader {
     private func setupIOReportSubscription() {
         guard let copyChannelsInGroup = copyChannelsInGroup,
               let createSubscription = createSubscription else {
-            log("IOReport: Functions not loaded")
             isAvailable = false
             return
         }
 
         // Try to subscribe to "Energy Model" group which contains power metrics
-        log("IOReport: Attempting to get Energy Model channels...")
         var energyChannels: CFMutableDictionary? = copyChannelsInGroup("Energy Model" as CFString, nil, 0, 0, 0)?.takeRetainedValue()
 
         if energyChannels == nil {
-            log("IOReport: Failed to get Energy Model channels - trying alternative names")
-
             // Try alternative channel group names
             let alternativeNames = ["energy", "CPU Stats", "GPU Stats"]
 
             for name in alternativeNames {
-                log("IOReport: Trying channel group '\(name)'...")
                 if let ch = copyChannelsInGroup(name as CFString, nil, 0, 0, 0)?.takeRetainedValue() {
-                    log("IOReport: Found channels for '\(name)'")
                     energyChannels = ch
                     break
                 }
@@ -144,33 +133,20 @@ class IOReportReader {
         }
 
         guard let validChannels = energyChannels else {
-            log("IOReport: Failed to find any power channels")
             isAvailable = false
             return
-        }
-
-        log("IOReport: Got channels (count: \(CFDictionaryGetCount(validChannels))), creating subscription...")
-
-        // Debug: Inspect channel contents
-        if let channelsDict = validChannels as NSDictionary as? [String: Any] {
-            log("IOReport: Channels dictionary keys: \(channelsDict.keys)")
-            for (key, value) in channelsDict.prefix(3) {
-                log("IOReport: Channel[\(key)]: \(type(of: value))")
-            }
         }
 
         channels = validChannels
 
         // Create subscription
         guard let sub = createSubscription(nil, validChannels, nil, 0, nil)?.takeRetainedValue() else {
-            log("IOReport: Failed to create subscription (returned nil)")
             isAvailable = false
             return
         }
 
         subscription = sub
         isAvailable = true
-        log("IOReport: Successfully initialized with subscription")
     }
 
     // MARK: - Public API
@@ -193,7 +169,6 @@ class IOReportReader {
 
         // Get current sample
         guard let currentSample = createSamples(subscription, channels, nil)?.takeRetainedValue() else {
-            log("IOReport: Failed to create samples")
             return nil
         }
 
@@ -205,7 +180,6 @@ class IOReportReader {
 
             // Compute delta between samples
             guard let delta = createSamplesDelta(prevSample, currentSample, nil)?.takeRetainedValue() else {
-                log("IOReport: Failed to create samples delta")
                 lastSample = currentSample
                 lastSampleTime = now
                 return nil
@@ -310,13 +284,5 @@ class IOReportReader {
     func readSystemPower() -> Double? {
         guard let metrics = getPowerMetrics() else { return nil }
         return metrics.systemPower > 0 ? metrics.systemPower : nil
-    }
-
-    // MARK: - Logging
-
-    private func log(_ msg: String) {
-        #if DEBUG
-        print("[IOReport] \(msg)")
-        #endif
     }
 }

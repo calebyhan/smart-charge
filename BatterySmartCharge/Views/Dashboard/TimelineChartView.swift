@@ -3,6 +3,7 @@ import SwiftUI
 struct TimelineChartView: View {
     let dataPoints: [Double]
     let historyEntries: [SmartChargeManager.BatteryHistoryEntry]
+    let useFahrenheit: Bool
 
     @State private var hoveredEntry: SmartChargeManager.BatteryHistoryEntry?
     @State private var hoverLocation: CGPoint?
@@ -35,9 +36,30 @@ struct TimelineChartView: View {
                             return geo.size.width * CGFloat(max(0, min(1, normalizedX)))
                         }
 
-                        // Calculate Y position from percentage
+                        // Calculate Y position from percentage (0-100%)
                         let yPosition: (Double) -> CGFloat = { percentage in
                             (1.0 - (percentage / 100.0)) * geo.size.height
+                        }
+
+                        // Calculate Y position for temperature (20-50°C or 68-122°F range)
+                        let tempYPosition: (Double) -> CGFloat = { tempC in
+                            let (minTemp, maxTemp): (Double, Double)
+                            let displayTemp: Double
+
+                            if useFahrenheit {
+                                // Convert to Fahrenheit for display
+                                displayTemp = tempC * 9 / 5 + 32
+                                minTemp = 68  // 20°C in F
+                                maxTemp = 122 // 50°C in F
+                            } else {
+                                displayTemp = tempC
+                                minTemp = 20
+                                maxTemp = 50
+                            }
+
+                            let clampedTemp = max(minTemp, min(maxTemp, displayTemp))
+                            let normalized = (clampedTemp - minTemp) / (maxTemp - minTemp)
+                            return (1.0 - normalized) * geo.size.height
                         }
 
                         ZStack {
@@ -75,6 +97,28 @@ struct TimelineChartView: View {
                             }
                             .stroke(Color.blue, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
 
+                            // Temperature line (orange, thinner)
+                            Path { path in
+                                let entriesWithTemp = historyEntries.filter { $0.temperature != nil }
+                                guard let firstEntry = entriesWithTemp.first,
+                                      let firstTemp = firstEntry.temperature else { return }
+
+                                path.move(to: CGPoint(
+                                    x: xPosition(firstEntry.timestamp),
+                                    y: tempYPosition(firstTemp)
+                                ))
+
+                                for entry in entriesWithTemp.dropFirst() {
+                                    if let temp = entry.temperature {
+                                        path.addLine(to: CGPoint(
+                                            x: xPosition(entry.timestamp),
+                                            y: tempYPosition(temp)
+                                        ))
+                                    }
+                                }
+                            }
+                            .stroke(Color.orange.opacity(0.7), style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+
                             // Hover indicator
                             if let entry = hoveredEntry {
                                 let x = xPosition(entry.timestamp)
@@ -95,8 +139,21 @@ struct TimelineChartView: View {
 
                                 // Tooltip
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("\(Int(entry.percentage))%")
-                                        .font(.system(size: 10, weight: .semibold))
+                                    HStack(spacing: 4) {
+                                        Text("\(Int(entry.percentage))%")
+                                            .font(.system(size: 10, weight: .semibold))
+                                            .foregroundColor(.blue)
+                                        if let tempC = entry.temperature {
+                                            Text("•")
+                                                .font(.system(size: 8))
+                                                .foregroundColor(.secondary)
+                                            let displayTemp = useFahrenheit ? (tempC * 9 / 5 + 32) : tempC
+                                            let unit = useFahrenheit ? "°F" : "°C"
+                                            Text(String(format: "%.1f\(unit)", displayTemp))
+                                                .font(.system(size: 10, weight: .semibold))
+                                                .foregroundColor(.orange)
+                                        }
+                                    }
                                     Text(formatHoverTime(entry.timestamp))
                                         .font(.system(size: 8))
                                         .foregroundColor(.secondary)

@@ -90,12 +90,9 @@ class BatteryIconRenderer {
 
         // When plugged in, show colors based on charging action
         switch action {
-        case .chargeActive, .chargeNormal:
+        case .chargeActive:
             // Green when actively charging
             return .systemGreen
-        case .chargeTrickle:
-            // Orange/yellow for trickle/maintenance
-            return .systemOrange
         case .rest:
             // Blue for idle/resting (plugged in but not charging)
             return .systemBlue
@@ -107,12 +104,9 @@ class BatteryIconRenderer {
 
     private static func drawStatusIndicator(action: ChargingAction) {
         switch action {
-        case .chargeActive, .chargeNormal:
+        case .chargeActive:
             // Draw charging bolt
             drawChargingBolt()
-        case .chargeTrickle:
-            // Draw trickle indicator (equals sign)
-            drawTrickleIndicator()
         case .rest:
             // Draw pause indicator
             drawRestIndicator()
@@ -137,25 +131,6 @@ class BatteryIconRenderer {
         // White bolt for contrast against green fill
         NSColor.white.setFill()
         boltPath.fill()
-    }
-
-    private static func drawTrickleIndicator() {
-        // Two horizontal lines (equals sign) for maintenance mode
-        let line1 = NSBezierPath()
-        line1.move(to: CGPoint(x: 7, y: 11))
-        line1.line(to: CGPoint(x: 13, y: 11))
-
-        let line2 = NSBezierPath()
-        line2.move(to: CGPoint(x: 7, y: 8))
-        line2.line(to: CGPoint(x: 13, y: 8))
-
-        NSColor.white.setStroke()
-        line1.lineWidth = 2
-        line2.lineWidth = 2
-        line1.lineCapStyle = .round
-        line2.lineCapStyle = .round
-        line1.stroke()
-        line2.stroke()
     }
 
     private static func drawRestIndicator() {

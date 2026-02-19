@@ -1,19 +1,20 @@
 import Foundation
 
 enum ChargingAction: String, Equatable, Codable {
-    case chargeActive
-    case chargeNormal
-    case chargeTrickle
-    case rest
-    case forceStop
-    
+    case chargeActive   // Enable charging
+    case rest           // Disable charging (normal operation)
+    case forceStop      // Disable charging (safety cutoff)
+
     var description: String {
         switch self {
-        case .chargeActive: return "Active Charging"
-        case .chargeNormal: return "Normal Charging"
-        case .chargeTrickle: return "Trickle Charging"
-        case .rest: return "Idle (Plugged In)"
-        case .forceStop: return "Force Stop (Safety)"
+        case .chargeActive: return "Charging"
+        case .rest: return "Not Charging"
+        case .forceStop: return "Stopped (Safety)"
         }
+    }
+
+    /// Whether this action results in charging being enabled
+    var isCharging: Bool {
+        self == .chargeActive
     }
 }

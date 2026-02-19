@@ -27,15 +27,16 @@ struct BatterySmartChargeApp: App {
         }
 
         // Delay to allow window creation before bringing it to front
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            // Activate the app to bring it to front
-            NSApp.activate(ignoringOtherApps: true)
-
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             // Find and focus the settings window
             for window in NSApp.windows {
                 if window.title.contains("Settings") || window.title.contains("Preferences") {
-                    window.makeKeyAndOrderFront(nil)
                     window.level = .floating
+                    window.orderFrontRegardless()
+                    window.makeKeyAndOrderFront(nil)
+
+                    // Ensure the app is activated after the window is ready
+                    NSApp.activate(ignoringOtherApps: true)
                 }
             }
         }

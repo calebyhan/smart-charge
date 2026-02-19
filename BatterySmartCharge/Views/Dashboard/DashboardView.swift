@@ -27,7 +27,7 @@ struct DashboardView: View {
         let percent = manager.monitor.state.percent
 
         // If we want to charge but hardware isn't charging yet (and we're plugged in)
-        if (action == .chargeActive || action == .chargeNormal) && !isCharging && isPluggedIn {
+        if action == .chargeActive && !isCharging && isPluggedIn {
             // At very high battery levels (>= 95%), macOS often won't charge even when allowed
             // This is normal Apple behavior to preserve battery longevity
             // Don't show "Applying changes..." to avoid confusing the user
@@ -65,7 +65,12 @@ struct DashboardView: View {
                             Label("Charging", systemImage: "bolt.fill")
                                 .foregroundColor(.green)
                                 .font(.caption)
-                            if let mins = manager.monitor.state.timeRemaining {
+                            // Show time to target if available, otherwise system estimate
+                            if let prediction = manager.predictTimeToTarget() {
+                                Text("(\(formatTimeRemaining(prediction.minutes)) to \(prediction.target)%)")
+                                    .foregroundColor(.secondary)
+                                    .font(.caption)
+                            } else if let mins = manager.monitor.state.timeRemaining {
                                 Text("(\(formatTimeRemaining(mins)))")
                                     .foregroundColor(.secondary)
                                     .font(.caption)
@@ -162,9 +167,29 @@ struct DashboardView: View {
                 targetMin: activeTargetRange.min,
                 targetMax: activeTargetRange.max
             )
-            
+
+            // Active Time Rule Indicator
+            if let activeRule = manager.settings.getActiveRule(for: Date()) {
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.fill")
+                        .foregroundColor(.purple)
+                        .font(.caption)
+                    Text(activeRule.name)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                    Text("(\(activeRule.targetMin)%-\(activeRule.targetMax)%)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             // Timeline
-            TimelineChartView(dataPoints: manager.historyPoints, historyEntries: manager.historyEntries)
+            TimelineChartView(
+                dataPoints: manager.historyPoints,
+                historyEntries: manager.historyEntries,
+                useFahrenheit: manager.settings.useFahrenheit
+            )
             
             Divider()
             
@@ -269,6 +294,7 @@ struct DashboardView: View {
             NSApp.activate(ignoringOtherApps: true)
             for window in NSApp.windows {
                 if window.title.contains("Settings") || window.title.contains("Preferences") {
+                    window.level = .floating
                     window.makeKeyAndOrderFront(nil)
                     window.orderFrontRegardless()
                 }
