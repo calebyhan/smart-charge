@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_NAME="BatterySmartCharge"
 APP_NAME="${PROJECT_NAME}.app"
 HELPER_ID="com.smartcharge.powermetrics-helper"
-VERSION="2.0.0"
+VERSION="2.0.7"
 IDENTIFIER="com.smartcharge.BatterySmartCharge.installer"
 
 # Colors for output
