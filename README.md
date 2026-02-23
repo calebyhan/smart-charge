@@ -24,7 +24,7 @@
 
 ### For Users
 
-1.  **Download**: Get `BatterySmartCharge-1.1.1.pkg` from the [Releases](https://github.com/yourusername/smart-charge/releases) page.
+1.  **Download**: Get `BatterySmartCharge-2.0.0.pkg` from the [Releases](https://github.com/calebyhan/smart-charge/releases) page.
 2.  **Install**: Double-click the `.pkg` file and follow the installer prompts. (If MacOS blocks the installation, press "Done" then go to System Settings > Privacy & Security and click "Open Anyway".)
 3.  **Authorize**: Enter your password when prompted (required for power monitoring helper).
 4.  **Run**: The app will be installed to `/Applications/`. Launch it from there.
@@ -39,14 +39,17 @@ The installer automatically sets up the privileged helper needed for real-time p
 
 To create a distributable installer:
 ```bash
-# Build Release version
-xcodebuild -project BatterySmartCharge.xcodeproj -scheme BatterySmartCharge -configuration Release clean build
+# Build Release version (universal binary — supports Intel + Apple Silicon)
+# Requires Xcode 16 or earlier (macOS 16+ SDK dropped x86_64 support)
+xcodebuild -project BatterySmartCharge.xcodeproj -scheme BatterySmartCharge -configuration Release ARCHS="arm64 x86_64" clean build
 
 # Create installer
 ./create_installer.sh
 ```
 
-The installer will be created at `dist/BatterySmartCharge-1.1.1.pkg`
+The installer will be created at `dist/BatterySmartCharge-2.0.0.pkg`
+
+> **Note for universal binary builds**: The project is configured with `ARCHS = "arm64 x86_64"` to support both Intel and Apple Silicon Macs. However, **Xcode 17+ (macOS 26 SDK)** dropped x86_64 system library support. To produce a universal binary that runs on Intel Macs, build with **Xcode 16** or use a macOS 15 CI runner (e.g., GitHub Actions `macos-15`).
 
 **Note**: The installer automatically bundles the `battery` CLI tool. If building the installer yourself, ensure `battery` is installed on your system (`brew install battery`) so it can be bundled.
 
