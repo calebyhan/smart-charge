@@ -29,9 +29,9 @@ jobs:
 
       - name: Install battery CLI
         run: |
+          curl -fsSL "https://raw.githubusercontent.com/actuallymentor/battery/main/setup.sh" | bash
           mkdir -p resources
-          curl -fsSL "https://raw.githubusercontent.com/actuallymentor/battery/main/battery" \
-            -o resources/battery
+          cp "$(which battery)" resources/battery
           chmod +x resources/battery
 
       - name: Build universal binary
