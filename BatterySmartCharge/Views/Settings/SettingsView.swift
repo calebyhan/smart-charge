@@ -297,7 +297,7 @@ struct AboutView: View {
                                 .font(.title2)
                                 .fontWeight(.bold)
 
-                            Text("Version 1.1.0")
+                            Text("Version 1.1.1")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 12)

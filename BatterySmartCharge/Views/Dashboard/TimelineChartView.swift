@@ -1,5 +1,12 @@
 import SwiftUI
 
+private struct TooltipSizeKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+
 struct TimelineChartView: View {
     let dataPoints: [Double]
     let historyEntries: [SmartChargeManager.BatteryHistoryEntry]
@@ -7,6 +14,7 @@ struct TimelineChartView: View {
 
     @State private var hoveredEntry: SmartChargeManager.BatteryHistoryEntry?
     @State private var hoverLocation: CGPoint?
+    @State private var tooltipSize: CGSize = CGSize(width: 100, height: 40)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -138,6 +146,21 @@ struct TimelineChartView: View {
                                     .position(x: x, y: y)
 
                                 // Tooltip
+                                let halfW = tooltipSize.width / 2
+                                let halfH = tooltipSize.height / 2
+                                let padding: CGFloat = 4
+                                let gap: CGFloat = 10
+
+                                // Clamp x so tooltip never leaves chart horizontally
+                                let tipX = min(max(x, halfW + padding), geo.size.width - halfW - padding)
+
+                                // Prefer above the dot; flip below if not enough room; clamp both edges
+                                let spaceAbove = y - gap - halfH
+                                let rawTipY: CGFloat = spaceAbove >= padding
+                                    ? spaceAbove + halfH  // above: bottom of tooltip = y - gap
+                                    : y + gap + halfH     // below: top of tooltip = y + gap
+                                let tipY = min(max(rawTipY, halfH + padding), geo.size.height - halfH - padding)
+
                                 VStack(alignment: .leading, spacing: 2) {
                                     HStack(spacing: 4) {
                                         Text("\(Int(entry.percentage))%")
@@ -159,14 +182,19 @@ struct TimelineChartView: View {
                                         .foregroundColor(.secondary)
                                 }
                                 .padding(4)
-                                .background(Color(nsColor: .controlBackgroundColor))
+                                .background(
+                                    GeometryReader { tooltipGeo in
+                                        Color(nsColor: .controlBackgroundColor)
+                                            .preference(key: TooltipSizeKey.self, value: tooltipGeo.size)
+                                    }
+                                )
                                 .cornerRadius(4)
                                 .shadow(radius: 2)
-                                .position(
-                                    x: min(max(x, 30), geo.size.width - 30),
-                                    y: max(y - 20, 10)
-                                )
+                                .position(x: tipX, y: tipY)
                             }
+                        }
+                        .onPreferenceChange(TooltipSizeKey.self) { size in
+                            if size != .zero { tooltipSize = size }
                         }
                         .onContinuousHover { phase in
                             switch phase {
