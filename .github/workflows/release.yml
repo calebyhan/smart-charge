@@ -41,8 +41,8 @@ jobs:
             -scheme BatterySmartCharge \
             -configuration Release \
             ARCHS="arm64 x86_64" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_IDENTITY="-" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
             clean build
 
       - name: Verify architectures
