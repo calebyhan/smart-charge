@@ -29,11 +29,9 @@ jobs:
 
       - name: Install battery CLI
         run: |
-          git config --global url."https://x-access-token:${{ github.token }}@github.com/".insteadOf "https://github.com/"
-          brew install actuallymentor/battery/battery
-          # Copy to resources/ so create_installer.sh finds it
           mkdir -p resources
-          cp "$(brew --prefix)/bin/battery" resources/battery
+          curl -fsSL "https://raw.githubusercontent.com/actuallymentor/battery/main/battery" \
+            -o resources/battery
           chmod +x resources/battery
 
       - name: Build universal binary
