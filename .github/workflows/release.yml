@@ -10,6 +10,8 @@ jobs:
   build:
     name: Build universal installer
     runs-on: macos-15
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
