@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_NAME="BatterySmartCharge"
 APP_NAME="${PROJECT_NAME}.app"
 HELPER_ID="com.smartcharge.powermetrics-helper"
-VERSION="2.0.7"
+VERSION="2.0.8"
 IDENTIFIER="com.smartcharge.BatterySmartCharge.installer"
 
 # Colors for output
@@ -23,9 +23,6 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "  BatterySmartCharge Installer Builder"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-
-# Verify the app binary is a universal binary (arm64 + x86_64)
-# If not, remind the user to build with the correct arch flags.
 
 # Find the built app (prefer Release, then Debug, exclude Index builds)
 APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "${APP_NAME}" -type d -path "*/Build/Products/Release/*" 2>/dev/null | head -1)
@@ -40,20 +37,6 @@ if [ -z "$APP_PATH" ]; then
 fi
 
 echo -e "${GREEN}✓${NC} Found app at: ${APP_PATH}"
-
-# Verify the app is a universal binary (arm64 + x86_64) for Intel + Apple Silicon support
-APP_BINARY="${APP_PATH}/Contents/MacOS/${PROJECT_NAME}"
-if [ -f "$APP_BINARY" ]; then
-    ARCHS_IN_BINARY=$(lipo -archs "$APP_BINARY" 2>/dev/null || echo "unknown")
-    if echo "$ARCHS_IN_BINARY" | grep -q "x86_64" && echo "$ARCHS_IN_BINARY" | grep -q "arm64"; then
-        echo -e "${GREEN}✓${NC} Universal binary detected (arm64 + x86_64)"
-    else
-        echo -e "${YELLOW}⚠${NC} Binary is not universal: ${ARCHS_IN_BINARY}"
-        echo "  For Intel + Apple Silicon support, build with:"
-        echo "  xcodebuild -project BatterySmartCharge.xcodeproj -scheme BatterySmartCharge -configuration Release ARCHS=\"arm64 x86_64\" clean build"
-        echo "  Continuing with current binary..."
-    fi
-fi
 
 # Find helper binary (it might be in a nested location due to build phase)
 HELPER_PATH=$(find "${APP_PATH}" -name "PowerMetricsHelper" -type f | head -1)
