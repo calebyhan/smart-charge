@@ -28,9 +28,8 @@ jobs:
           xcodebuild -version
 
       - name: Install battery CLI
-        env:
-          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: |
+          git config --global url."https://x-access-token:${{ github.token }}@github.com/".insteadOf "https://github.com/"
           brew install actuallymentor/battery/battery
           # Copy to resources/ so create_installer.sh finds it
           mkdir -p resources
